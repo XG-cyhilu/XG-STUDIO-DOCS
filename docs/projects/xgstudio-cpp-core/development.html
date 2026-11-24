@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-Core · 开发" data-en="XGStudio-cpp-Core · Development">XGStudio-cpp-Core · 开发</title>
+<meta name="description" content="XGStudio-cpp-Core 开发文档：技术栈、目录结构、模块 API、构建选项与测试。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-Core</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">开发</span><span data-lang="en">Development</span>
+    </p>
+
+    <h1><span data-lang="zh">开发</span><span data-lang="en">Development</span></h1>
+    <p class="sub" data-lang="zh">技术栈、目录结构、公开 API、构建与测试。</p>
+    <p class="sub" data-lang="en">Stack, layout, public APIs, build and tests.</p>
+
+    <h2 id="stack"><span data-lang="zh">技术栈</span><span data-lang="en">Stack</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">项目</span><span data-lang="en">Item</span></th><th><span data-lang="zh">值</span><span data-lang="en">Value</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">语言标准</span><span data-lang="en">Language</span></td><td>C++17（<code>/std:c++17</code>，<code>/utf-8</code>，<code>/permissive-</code>）</td></tr>
+          <tr><td><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></td><td>MSVC 2022（x64），源码 UTF-8 with BOM</td></tr>
+          <tr><td><span data-lang="zh">构建系统</span><span data-lang="en">Build system</span></td><td>CMake ≥ 3.20，生成 Visual Studio 解决方案</td></tr>
+          <tr><td><span data-lang="zh">依赖管理</span><span data-lang="en">Dependencies</span></td><td>vcpkg manifest（<code>vcpkg.json</code>），静态三元组 <code>x64-windows-static</code></td></tr>
+          <tr><td><span data-lang="zh">唯一外部库</span><span data-lang="en">Only external library</span></td><td>libcurl（Schannel 后端，含 zlib），仅 XGNET / XGDL 使用</td></tr>
+          <tr><td><span data-lang="zh">系统 API</span><span data-lang="en">System APIs</span></td><td>CNG（bcrypt）、Win32、DWM、DbgHelp、WinHTTP 无关</td></tr>
+          <tr><td><span data-lang="zh">测试</span><span data-lang="en">Testing</span></td><td>CTest，13 条用例，全部离线</td></tr>
+          <tr><td><span data-lang="zh">CI</span><span data-lang="en">CI</span></td><td>GitHub Actions，windows-latest，configure → build → ctest，约 50 秒</td></tr>
+          <tr><td><span data-lang="zh">许可</span><span data-lang="en">License</span></td><td>Apache-2.0，文件头 SPDX</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="layout"><span data-lang="zh">目录结构</span><span data-lang="en">Repository layout</span></h2>
+    <div class="tree-box">
+<pre data-file="cpploclib/">cpploclib/
+├─ CMakeLists.txt              # 聚合入口 + 逐模块 option
+├─ vcpkg.json                  # libcurl 依赖声明
+├─ CHANGELOG.md
+├─ modDownload/                # XGDL
+│  ├─ include/xgdl/xgdl.h
+│  ├─ src/  Engine.cpp · Manager.cpp · Util.cpp · internal.h
+│  ├─ demo/main.cpp
+│  ├─ CMakeLists.txt
+│  └─ README.md
+├─ modLog/      include/xglog/xglog.h      src/xglog.cpp
+├─ modProc/     include/xgproc/xgproc.h    src/xgproc.cpp
+├─ modCrypto/   include/xgcrypto/xgcrypto.h src/xgcrypto.cpp
+├─ modSecure/   include/xgsecure/xgsecure.h src/xgsecure.cpp
+├─ modZip/      include/xgzip/xgzip.h      src/xgzip.cpp · inflate.cpp · deflate.cpp · ZipWrite.cpp
+├─ modFs/       include/xgfs/xgfs.h        src/xgfs.cpp
+├─ modCfg/      include/xgcfg/xgcfg.h      src/xgcfg.cpp
+├─ modThread/   include/xgthread/xgthread.h src/xgthread.cpp
+├─ modNet/      include/xgnet/xgnet.h      src/xgnet.cpp · gzip.cpp
+├─ modShell/    include/xgshell/xgshell.h  src/xgshell.cpp
+├─ modCrash/    include/xgcrash/xgcrash.h  src/xgcrash.cpp
+├─ modCore/     include/xgcore/xgcore.h    src/xgcore.cpp
+├─ tests/       cfg/ core/ crash/ crypto/ fs/ log/ net/ proc/ secure/ shell/ thread/ zip/
+│  ├─ CMakeLists.txt
+│  └─ test_util.h
+└─ .github/workflows/</pre>
+    </div>
+    <p data-lang="zh">每个 <code>mod*</code> 目录都是完整的独立工程：自带 <code>CMakeLists.txt</code>、demo 与 README，可以单独 configure，也可以被上层 <code>add_subdirectory</code> 收进来。</p>
+    <p data-lang="en">Every <code>mod*</code> directory is a complete standalone project with its own <code>CMakeLists.txt</code>, demo and README; it can be configured alone or pulled in by a parent via <code>add_subdirectory</code>.</p>
+
+    <h2 id="api"><span data-lang="zh">模块与公开 API</span><span data-lang="en">Modules and public APIs</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">模块</span><span data-lang="en">Module</span></th><th><span data-lang="zh">链接目标</span><span data-lang="en">Target</span></th><th><span data-lang="zh">头文件</span><span data-lang="en">Header</span></th><th><span data-lang="zh">主要入口</span><span data-lang="en">Main entry points</span></th></tr></thead>
+        <tbody>
+          <tr><td>XGDL</td><td><code>XGDL::xgdl</code></td><td><code>xgdl/xgdl.h</code></td><td><code>Manager</code>: <code>Add</code> / <code>Start</code> / <code>Pause</code> / <code>Cancel</code> / <code>Snapshot</code> / <code>PollEvent</code> / <code>QueryTask</code> / <code>WaitIdle</code></td></tr>
+          <tr><td>XGLOG</td><td><code>XGLOG::xglog</code></td><td><code>xglog/xglog.h</code></td><td><code>Init</code> / <code>Shutdown</code> / <code>Flush</code> / <code>SetLevel</code> / <code>Logf</code> / <code>VLogf</code> / <code>UiPoll</code> / <code>Dropped</code></td></tr>
+          <tr><td>XGPROC</td><td><code>XGPROC::xgproc</code></td><td><code>xgproc/xgproc.h</code></td><td><code>Process</code>（<code>Options</code>、<code>Line</code>、<code>Result</code>、<code>Encoding</code>）、<code>Quote</code> / <code>JoinArgs</code></td></tr>
+          <tr><td>XGCRYPTO</td><td><code>XGCRYPTO::xgcrypto</code></td><td><code>xgcrypto/xgcrypto.h</code></td><td><code>Hash</code> / <code>HashFile</code> / <code>ToHex</code> / <code>FromHex</code> / <code>Equals</code>、<code>Alg</code></td></tr>
+          <tr><td>XGSECURE</td><td><code>XGSECURE::xgsecure</code></td><td><code>xgsecure/xgsecure.h</code></td><td>Base64、<code>RandomBytes</code>、HMAC、AES-GCM、PBKDF2</td></tr>
+          <tr><td>XGZIP</td><td><code>XGZIP::xgzip</code></td><td><code>xgzip/xgzip.h</code></td><td><code>List</code> / <code>ReadEntry</code> / <code>Extract</code> / <code>Crc32</code>；<code>Entry</code>、<code>ExtractOptions</code>、<code>Result</code></td></tr>
+          <tr><td>XGFS</td><td><code>XGFS::xgfs</code></td><td><code>xgfs/xgfs.h</code></td><td><code>Normalize</code> / <code>Join</code> / <code>FileName</code> / <code>Stem</code> / <code>Extension</code> / <code>Parent</code> / <code>Exists</code> / <code>IsDir</code> / <code>Size</code></td></tr>
+          <tr><td>XGCFG</td><td><code>XGCFG::xgcfg</code></td><td><code>xgcfg/xgcfg.h</code></td><td><code>Config</code>（<code>Load</code> / <code>Save</code> / <code>Get*</code> / <code>Set</code> / <code>Changed</code> / <code>Reload</code>）、<code>Value</code>、<code>Binder</code></td></tr>
+          <tr><td>XGTHREAD</td><td><code>XGTHREAD::xgthread</code></td><td><code>xgthread/xgthread.h</code></td><td><code>Pool</code>: <code>Post</code> / <code>WaitIdle</code> / <code>Shutdown</code>；<code>MainQueue</code>；<code>HardwareThreads</code></td></tr>
+          <tr><td>XGNET</td><td><code>XGNET::xgnet</code></td><td><code>xgnet/xgnet.h</code></td><td><code>Client</code>: <code>Get</code>；<code>Request</code>、<code>Response</code></td></tr>
+          <tr><td>XGSHELL</td><td><code>XGSHELL::xgshell</code></td><td><code>xgshell/xgshell.h</code></td><td><span data-lang="zh">单实例、URL 协议注册、托盘、开机自启、提权重启</span><span data-lang="en">Single instance, URL protocol registration, tray, autostart, elevated relaunch</span></td></tr>
+          <tr><td>XGCRASH</td><td><code>XGCRASH::xgcrash</code></td><td><code>xgcrash/xgcrash.h</code></td><td><span data-lang="zh">安装处理器（SEH / <code>std::terminate</code> / VEH）、写 minidump</span><span data-lang="en">Install handlers (SEH / <code>std::terminate</code> / VEH), write minidumps</span></td></tr>
+          <tr><td>XGCORE</td><td><code>XGCORE::xgcore</code></td><td><code>xgcore/xgcore.h</code></td><td><span data-lang="zh">聚合头、<code>Version()</code>、模块清单</span><span data-lang="en">Umbrella header, <code>Version()</code>, module list</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">各模块 README 里还有每个类型的字段级说明；此处只列入口，避免与头文件重复。</p>
+    <p data-lang="en">Each module README documents its types field by field; this table lists entry points only to avoid duplicating the headers.</p>
+
+    <h2 id="quickstart"><span data-lang="zh">快速开始</span><span data-lang="en">Quick start</span></h2>
+    <div class="tabs">
+      <input type="radio" name="qs-tab" id="qs-a" checked>
+      <input type="radio" name="qs-tab" id="qs-b">
+      <input type="radio" name="qs-tab" id="qs-c">
+      <div class="tab-bar">
+        <label for="qs-a"><span data-lang="zh">作为子目录</span><span data-lang="en">As a subdirectory</span></label>
+        <label for="qs-b"><span data-lang="zh">单模块</span><span data-lang="en">Single module</span></label>
+        <label for="qs-c"><span data-lang="zh">命令行构建</span><span data-lang="en">Command line</span></label>
+      </div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="CMakeLists.txt">add_subdirectory(third_party/cpploclib)
+
+target_link_libraries(YourApp PRIVATE
+    XGDL::xgdl
+    XGLOG::xglog
+    XGCFG::xgcfg)</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="CMakeLists.txt"># 只拿一个模块：把 modCfg 目录整个拷走即可
+add_subdirectory(modCfg)
+target_link_libraries(YourApp PRIVATE XGCFG::xgcfg)</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="shell">cmake -B .build -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+  -DVCPKG_TARGET_TRIPLET=x64-windows-static `
+  -DCPPLOCLIB_BUILD_TESTS=ON
+cmake --build .build --config Release
+ctest --test-dir .build -C Release --output-on-failure</pre>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="options"><span data-lang="zh">构建开关</span><span data-lang="en">Build options</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">选项</span><span data-lang="en">Option</span></th><th><span data-lang="zh">默认</span><span data-lang="en">Default</span></th><th><span data-lang="zh">作用</span><span data-lang="en">Effect</span></th></tr></thead>
+        <tbody>
+          <tr><td><code>CPPLOCLIB_BUILD_&lt;MODULE&gt;</code></td><td>ON</td><td><span data-lang="zh">逐模块开关（DOWNLOAD / LOG / PROC / CRYPTO / ZIP / FS / CFG / THREAD / NET / SECURE / SHELL / CRASH / CORE）</span><span data-lang="en">Per-module switch (DOWNLOAD / LOG / PROC / CRYPTO / ZIP / FS / CFG / THREAD / NET / SECURE / SHELL / CRASH / CORE)</span></td></tr>
+          <tr><td><code>CPPLOCLIB_BUILD_DEMOS</code></td><td>ON</td><td><span data-lang="zh">构建各模块 demo；XGDL 的 <code>--selfcheck</code> 依赖它</span><span data-lang="en">Build module demos; XGDL's <code>--selfcheck</code> depends on it</span></td></tr>
+          <tr><td><code>CPPLOCLIB_BUILD_TESTS</code></td><td>OFF</td><td><span data-lang="zh">注册 13 条 ctest 用例</span><span data-lang="en">Register the 13 ctest cases</span></td></tr>
+          <tr><td><code>XGDL_*</code> / <code>XGLOG_BUILD_DEMO</code> 等</td><td><span data-lang="zh">由上层推导</span><span data-lang="en">Inherited</span></td><td><span data-lang="zh">单模块构建时的局部开关</span><span data-lang="en">Local switches when building a module alone</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="tests"><span data-lang="zh">测试与 CI</span><span data-lang="en">Tests and CI</span></h2>
+    <ul>
+      <li data-lang="zh"><code>tests/</code> 下 12 个用例目录，每目录一个 <code>main.cpp</code>，共用 <code>test_util.h</code> 的最简断言。</li>
+      <li data-lang="en">Twelve test directories under <code>tests/</code>, each a single <code>main.cpp</code>, sharing minimal assertions from <code>test_util.h</code>.</li>
+      <li data-lang="zh">第 13 条是 <code>xgdl_demo --selfcheck</code>，以可执行文件自检代替单测，因此需要 <code>CPPLOCLIB_BUILD_DEMOS=ON</code>。</li>
+      <li data-lang="en">The thirteenth is <code>xgdl_demo --selfcheck</code>, using a binary self-check instead of a unit test, so it needs <code>CPPLOCLIB_BUILD_DEMOS=ON</code>.</li>
+      <li data-lang="zh">所有用例不出网：HTTP 相关逻辑通过本地假数据与解析路径覆盖。</li>
+      <li data-lang="en">No case touches the network: HTTP logic is covered through local fixtures and the parsing path.</li>
+      <li data-lang="zh">CI 特意排除 XGDL 与 XGNET：vcpkg 的 curl 导出带 <code>$&lt;LINK_ONLY:…&gt;</code>，在 CMake 4.x 下会破坏 <code>install(EXPORT)</code>，因此在 CI 里只验证其余 11 个模块。</li>
+      <li data-lang="en">CI deliberately excludes XGDL and XGNET: vcpkg's curl export carries <code>$&lt;LINK_ONLY:…&gt;</code>, which breaks <code>install(EXPORT)</code> under CMake 4.x, so only the other eleven modules are verified in CI.</li>
+    </ul>
+
+    <h2 id="limits"><span data-lang="zh">已知边界</span><span data-lang="en">Known limits</span></h2>
+    <ul>
+      <li data-lang="zh">仅 Windows / x64；没有 POSIX 分支。</li>
+      <li data-lang="en">Windows / x64 only; there is no POSIX branch.</li>
+      <li data-lang="zh">接口以 C++ 类型暴露，不提供 C ABI；需要 FFI 时由上层自行包一层 <code>extern "C"</code>。</li>
+      <li data-lang="en">APIs are exposed as C++ types with no C ABI; wrap them in <code>extern "C"</code> when an FFI boundary is needed.</li>
+      <li data-lang="zh">XGNET 为同步客户端，长连接复用与并发由调用方用线程池组合。</li>
+      <li data-lang="en">XGNET is a synchronous client; connection reuse and concurrency are combined by the caller through the thread pool.</li>
+      <li data-lang="zh">XGCRASH 只写 minidump，不做符号服务器上传。</li>
+      <li data-lang="en">XGCRASH writes minidumps only and does not upload to a symbol server.</li>
+    </ul>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="index.html"><span data-lang="zh">说明：项目定位与技术栈</span><span data-lang="en">Overview: positioning and stack</span></a></li>
+      <li><a href="reference.html"><span data-lang="zh">参考：三段核心逻辑</span><span data-lang="en">Reference: three core mechanisms</span></a></li>
+      <li><a href="../../general/licensing.html"><span data-lang="zh">通用：许可与归属</span><span data-lang="en">General: licensing and attribution</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

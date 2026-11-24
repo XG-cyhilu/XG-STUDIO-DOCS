@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-UI · 说明" data-en="XGStudio-cpp-UI · Overview">XGStudio-cpp-UI · 说明</title>
+<meta name="description" content="XGStudio-cpp-UI 项目说明：定位、技术栈、界面结构与适用范围。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-UI</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">说明</span><span data-lang="en">Overview</span>
+    </p>
+
+    <h1><span data-lang="zh">项目说明</span><span data-lang="en">Project Overview</span></h1>
+    <p class="sub" data-lang="zh">XGStudio-cpp-UI 是一套用 C++17 与 Direct2D 实现的 Windows 桌面控件库，版本 1.0.0，Apache-2.0 许可。</p>
+    <p class="sub" data-lang="en">XGStudio-cpp-UI is a Windows desktop control library written in C++17 with Direct2D. Version 1.0.0, Apache-2.0.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17</span>
+      <span class="chip">Direct2D</span>
+      <span class="chip">DirectWrite</span>
+      <span class="chip">Win32</span>
+      <span class="chip">v1.0.0</span>
+      <span class="chip">Apache-2.0</span>
+    </div>
+
+    <h2 id="what"><span data-lang="zh">这是什么</span><span data-lang="en">What it is</span></h2>
+    <p data-lang="zh">
+      这是一套<strong>完全自绘</strong>的控件库：窗口里不存在任何系统控件——没有 <code>EDIT</code>、没有 <code>COMBOBOX</code>、没有 <code>BUTTON</code>，
+      控件外形、文字、光标、选区、滚动条与阴影全部由 Direct2D 绘制。它面向需要统一视觉、又不想被系统主题和控件样式牵着走的 Windows 桌面程序。
+    </p>
+    <p data-lang="en">
+      This is a <strong>fully self-drawn</strong> control library: no system controls exist inside the window —
+      no <code>EDIT</code>, no <code>COMBOBOX</code>, no <code>BUTTON</code>. Shapes, text, carets, selections,
+      scrollbars and shadows are all painted with Direct2D. It targets Windows desktop applications that want a
+      consistent visual language without inheriting system control styling and theme drift.
+    </p>
+    <p data-lang="zh">
+      库以单一 Fluent 2 底座组织视觉：尺寸由一套共享度量决定，颜色由一组语义色板决定，字号走官方 type ramp。
+      同一份界面在浅色 / 深色两档、Microsoft / GitHub 两套色板下都能直接成立，不需要为换肤重写控件。
+    </p>
+    <p data-lang="en">
+      A single Fluent 2 foundation drives the visuals: sizes come from one shared metric set, colours from a
+      semantic palette, and font sizes from the official type ramp. The same interface holds up in light and dark
+      modes across the Microsoft and GitHub palettes, with no control rewrites for re-theming.
+    </p>
+
+    <h2 id="tech"><span data-lang="zh">技术栈</span><span data-lang="en">Technology stack</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">方面</span><span data-lang="en">Aspect</span></th>
+          <th><span data-lang="zh">选型</span><span data-lang="en">Choice</span></th>
+          <th><span data-lang="zh">说明</span><span data-lang="en">Notes</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">语言</span><span data-lang="en">Language</span></td><td>C++17</td><td><span data-lang="zh">MSVC 2019 / 2022</span><span data-lang="en">MSVC 2019 / 2022</span></td></tr>
+          <tr><td><span data-lang="zh">窗口与输入</span><span data-lang="en">Window and input</span></td><td>Win32</td><td><span data-lang="zh">自建消息循环，Per-Monitor V2 DPI</span><span data-lang="en">Own message loop, Per-Monitor V2 DPI</span></td></tr>
+          <tr><td><span data-lang="zh">图形</span><span data-lang="en">Graphics</span></td><td><span data-lang="zh">Direct2D 1.0</span><span data-lang="en">Direct2D 1.0</span></td><td><span data-lang="zh">持久离屏层，不依赖 D3D11 或 Effects</span><span data-lang="en">Persistent off-screen layer, no D3D11 or Effects dependency</span></td></tr>
+          <tr><td><span data-lang="zh">文字</span><span data-lang="en">Text</span></td><td>DirectWrite</td><td><span data-lang="zh">文本布局缓存，Fluent type ramp</span><span data-lang="en">Cached text layouts, Fluent type ramp</span></td></tr>
+          <tr><td><span data-lang="zh">构建</span><span data-lang="en">Build</span></td><td>CMake</td><td><span data-lang="zh">Visual Studio 2022 生成器，产物为静态库</span><span data-lang="en">Visual Studio 2022 generator, static library output</span></td></tr>
+          <tr><td><span data-lang="zh">许可</span><span data-lang="en">License</span></td><td>Apache-2.0</td><td><span data-lang="zh">适合商用与再分发</span><span data-lang="en">Suitable for commercial use and redistribution</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="interface"><span data-lang="zh">界面</span><span data-lang="en">Interface</span></h2>
+    <p data-lang="zh">
+      典型窗口由三部分组成：顶部是库自带的自绘标题栏（标题、可选导航、最小化 / 最大化 / 关闭三个系统按钮，整条栏可作为拖动区），
+      下方是铺满剩余空间的内容区，内容通常由卡片、列表行与输入类控件组成。窗口默认使用自绘边框，
+      客户区吃掉整个窗口，同时保留系统投影、吸附与最大化动画。
+    </p>
+    <p data-lang="en">
+      A typical window has three parts: a custom-drawn title bar at the top (title, optional navigation, and the
+      three system buttons, with the whole bar acting as a drag area), and a content area filling the rest, usually
+      built from cards, list rows and input controls. The default custom frame lets the client area take the entire
+      window while keeping system shadows, snapping and the maximise animation.
+    </p>
+
+    <div class="shots">
+      <figure>
+        <a href="../../assets/img/vcui-light.png" target="_blank" rel="noopener"><img src="../../assets/img/vcui-light.png" alt="VCUI light theme" loading="lazy"></a>
+        <figcaption><span data-lang="zh">浅色 · 控件页（输入类）</span><span data-lang="en">Light · controls page (inputs)</span></figcaption>
+      </figure>
+      <figure>
+        <a href="../../assets/img/vcui-dark.png" target="_blank" rel="noopener"><img src="../../assets/img/vcui-dark.png" alt="VCUI dark theme" loading="lazy"></a>
+        <figcaption><span data-lang="zh">深色 · 同一页、同一组控件</span><span data-lang="en">Dark · same page, same controls</span></figcaption>
+      </figure>
+    </div>
+    <p class="sub" data-lang="zh" style="margin-top:-8px">截图来自库内附带的展示程序，不是设计稿；点击可查看原图。</p>
+    <p class="sub" data-lang="en" style="margin-top:-8px">Screenshots are from the bundled demo application, not design mockups; click for full size.</p>
+
+    <ul>
+      <li data-lang="zh"><strong>视觉一致性：</strong>深浅切换与色板切换同步进行，标题栏明暗也跟着系统状态变更，不出现半深半浅的窗口。</li>
+      <li data-lang="en"><strong>Visual consistency:</strong> mode and palette switch together, and the title bar dark state follows, so windows are never half dark.</li>
+      <li data-lang="zh"><strong>中文与输入法：</strong>自绘文本框完整处理输入法组合串与候选窗，中文输入时组合串带下划线、候选窗贴在光标附近。</li>
+      <li data-lang="en"><strong>Chinese input:</strong> the self-drawn text box fully handles IME composition and candidate windows, with underlined composition text and candidates placed next to the caret.</li>
+      <li data-lang="zh"><strong>键盘可达：</strong>Tab 顺序、空格 / 回车激活、方向键步进、F4 展开下拉、Esc 关闭弹层全部可用，焦点环只在键盘操作时出现。</li>
+      <li data-lang="en"><strong>Keyboard access:</strong> tab order, Space/Enter activation, arrow stepping, F4 dropdowns and Esc dismissal all work, and the focus ring appears only for keyboard use.</li>
+    </ul>
+
+    <h2 id="performance"><span data-lang="zh">运行特征</span><span data-lang="en">Runtime characteristics</span></h2>
+    <p data-lang="zh">渲染为消息驱动加脏矩形：事件只改控件树并标脏，绘制发生在重绘消息里；有动画时按合成节拍推进，静止时挂起等待消息。</p>
+    <p data-lang="en">Rendering is message-driven with dirty rectangles: events only mutate the widget tree and mark it dirty, painting happens on paint messages; animation follows the composition cadence and idles otherwise.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">场景</span><span data-lang="en">Scenario</span></th>
+          <th><span data-lang="zh">实测（低配测试机）</span><span data-lang="en">Measured (low-end test machine)</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">启动后内存</span><span data-lang="en">Memory after launch</span></td><td>12.7 MB</td></tr>
+          <tr><td><span data-lang="zh">空闲 CPU / GPU</span><span data-lang="en">Idle CPU / GPU</span></td><td>0 % / 0 %</td></tr>
+          <tr><td><span data-lang="zh">持续切页时 CPU / GPU</span><span data-lang="en">CPU / GPU while switching pages</span></td><td>≤ 5 % / ≤ 10 %</td></tr>
+          <tr><td><span data-lang="zh">单帧绘制</span><span data-lang="en">Frame paint</span></td><td>&lt; 12 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" data-lang="zh">测试机为 Intel Core i7-3520M、12GB DDR3、Intel HD Graphics 4000，使用库内展示程序。</p>
+    <p class="sub" data-lang="en">Test machine: Intel Core i7-3520M, 12 GB DDR3, Intel HD Graphics 4000, running the bundled demo.</p>
+
+    <h2 id="scope"><span data-lang="zh">适用范围与限制</span><span data-lang="en">Scope and limits</span></h2>
+    <div class="kv">
+      <dt><span data-lang="zh">支持系统</span><span data-lang="en">Supported OS</span></dt>
+      <dd><span data-lang="zh">Windows 10 1703（build 15063）及以上，含 Windows 11；不支持 Windows 7 / 8 / 8.1。</span><span data-lang="en">Windows 10 1703 (build 15063) and later, including Windows 11; Windows 7/8/8.1 are not supported.</span></dd>
+      <dt><span data-lang="zh">架构</span><span data-lang="en">Architecture</span></dt>
+      <dd><span data-lang="zh">已验证 x64；x86 与 ARM64 尚未测试。</span><span data-lang="en">x64 verified; x86 and ARM64 untested.</span></dd>
+      <dt><span data-lang="zh">图形下限</span><span data-lang="en">Graphics floor</span></dt>
+      <dd><span data-lang="zh">任意支持 Direct2D 1.0 的显卡或驱动，含 WARP 软件回退。</span><span data-lang="en">Any GPU or driver supporting Direct2D 1.0, including the WARP software fallback.</span></dd>
+      <dt><span data-lang="zh">主要使用方</span><span data-lang="en">Primary consumer</span></dt>
+      <dd><span data-lang="zh">Void Craft Launcher 的界面层；也可用于其他 Windows C++17 桌面工程。</span><span data-lang="en">The UI layer of Void Craft Launcher; also usable in other Windows C++17 desktop projects.</span></dd>
+    </div>
+    <p data-lang="zh">已知限制：滚动没有惯性余速；下拉只向下展开；跨屏 DPI 变化尚未实测重算；阴影是四层圆角位图叠加而非真高斯；切页只有新页入场动画。</p>
+    <p data-lang="en">Known limits: no inertial scrolling; dropdowns only open downwards; cross-monitor DPI changes are not recalculated at runtime; shadows are four stacked rounded bitmaps rather than a true Gaussian; page transitions animate only the incoming page.</p>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="reference.html"><span data-lang="zh">参考：界面画廊、主题体系与核心渲染逻辑</span><span data-lang="en">Reference: gallery, theme system and core rendering logic</span></a></li>
+      <li><a href="development.html"><span data-lang="zh">开发：头文件、公开 API、构建与集成</span><span data-lang="en">Development: headers, public API, build and integration</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-UI" target="_blank" rel="noopener"><span data-lang="zh">源码仓库</span><span data-lang="en">Source repository</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

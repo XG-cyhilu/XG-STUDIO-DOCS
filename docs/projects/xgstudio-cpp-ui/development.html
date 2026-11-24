@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-UI · 开发" data-en="XGStudio-cpp-UI · Development">XGStudio-cpp-UI · 开发</title>
+<meta name="description" content="XGStudio-cpp-UI 开发文档：精确技术栈、目录结构、公开 API、构建与集成、系统要求。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-UI</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">开发</span><span data-lang="en">Development</span>
+    </p>
+
+    <h1><span data-lang="zh">开发</span><span data-lang="en">Development</span></h1>
+    <p class="sub" data-lang="zh">精确技术栈、仓库结构、公开 API 与构建集成方式。</p>
+    <p class="sub" data-lang="en">Exact stack, repository layout, public API and build integration.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17 / MSVC</span>
+      <span class="chip">CMake</span>
+      <span class="chip">VCUI::vcui</span>
+      <span class="chip">Apache-2.0</span>
+    </div>
+
+    <h2 id="stack"><span data-lang="zh">精确技术栈</span><span data-lang="en">Exact stack</span></h2>
+    <div class="kv">
+      <dt><span data-lang="zh">语言标准</span><span data-lang="en">Language</span></dt>
+      <dd>C++17（<code>/std:c++17</code>，公开头含 <code>inline</code> 变量，使用 <code>add_subdirectory</code> 时会自动传递给消费方）</dd>
+      <dt><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></dt>
+      <dd><span data-lang="zh">MSVC 2019 / 2022；已在 MSVC 14.44 上验证</span><span data-lang="en">MSVC 2019/2022; verified on MSVC 14.44</span></dd>
+      <dt><span data-lang="zh">平台下限</span><span data-lang="en">Platform floor</span></dt>
+      <dd><span data-lang="zh">Windows 10 1703 / build 15063（由 Per-Monitor V2 DPI 决定）</span><span data-lang="en">Windows 10 1703 / build 15063 (set by Per-Monitor V2 DPI)</span></dd>
+      <dt><span data-lang="zh">图形接口</span><span data-lang="en">Graphics</span></dt>
+      <dd><span data-lang="zh">Direct2D 1.0（<code>ID2D1HwndRenderTarget</code> + <code>ID2D1BitmapRenderTarget</code>）、DirectWrite、DWM</span><span data-lang="en">Direct2D 1.0 (<code>ID2D1HwndRenderTarget</code> + <code>ID2D1BitmapRenderTarget</code>), DirectWrite, DWM</span></dd>
+      <dt><span data-lang="zh">构建</span><span data-lang="en">Build</span></dt>
+      <dd>CMake，生成器 <code>Visual Studio 17 2022</code>，<code>-A x64</code></dd>
+      <dt><span data-lang="zh">链接的系统库</span><span data-lang="en">System libraries</span></dt>
+      <dd><code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code></dd>
+      <dt><span data-lang="zh">产物</span><span data-lang="en">Artifacts</span></dt>
+      <dd><code>vcui.lib</code><span data-lang="zh">（<code>VCUI_BUILD_SHARED=ON</code> 时为 DLL + 导入库）</span><span data-lang="en"> (<code>vcui.dll</code> + import library when <code>VCUI_BUILD_SHARED=ON</code>)</span></dd>
+    </div>
+
+    <h2 id="layout"><span data-lang="zh">目录结构</span><span data-lang="en">Repository layout</span></h2>
+    <div class="tree-box"><pre data-file="XGStudio-cpp-UI/">XGStudio-cpp-UI/
+├─ <span class="path">include/vcui/</span>          <span class="note"># public headers — the only part consumers need</span>
+│  ├─ vcui.h               <span class="note"># single include + Version</span>
+│  ├─ Color.h              <span class="note"># color helpers, Tokens / Metrics / Palette / type ramp</span>
+│  ├─ Theme.h              <span class="note"># palette + mode + accent</span>
+│  ├─ Gfx.h                <span class="note"># drawing context for custom controls</span>
+│  ├─ Widget.h             <span class="note"># base class, PaintCtx, hit testing, animation</span>
+│  ├─ Layout.h             <span class="note"># Stack / Card / Grid / Absolute / Divider / ScrollView</span>
+│  ├─ Controls.h           <span class="note"># 17 controls + feedback layer</span>
+│  ├─ Surface.h            <span class="note"># host window: DPI, frame loop, routing, focus, overlays</span>
+│  └─ App.h                <span class="note"># AppOptions + CreateAppWindow / CreateAppSurface / RunAppLoop</span>
+├─ <span class="path">src/</span>                    <span class="note"># implementation (private)</span>
+├─ <span class="path">demo/</span>
+│  ├─ frame.cpp            <span class="note"># VCUIFrameDemo: four pages + sub-navigation (README screenshots)</span>
+│  ├─ main.cpp             <span class="note"># VCUIDemo: all controls</span>
+│  ├─ minimal.cpp          <span class="note"># VCUIMinimal: smallest usable example</span>
+│  └─ multiwin.cpp         <span class="note"># VCUIMultiWin: multiple windows, shared loop</span>
+├─ <span class="path">tools/layoutcheck.cpp</span>  <span class="note"># headless layout self-check</span>
+├─ <span class="path">docs/</span>                  <span class="note"># screenshots used by the README</span>
+└─ CMakeLists.txt</pre></div>
+
+    <h2 id="api"><span data-lang="zh">公开 API</span><span data-lang="en">Public API</span></h2>
+    <p data-lang="zh">公开面集中在 <code>include/vcui</code>，<code>src/</code> 不对外。<code>vcui.h</code> 一次性引入全部头文件。</p>
+    <p data-lang="en">The public surface lives in <code>include/vcui</code>; <code>src/</code> is private. <code>vcui.h</code> includes everything.</p>
+
+    <h3 id="api-app"><span data-lang="zh">应用入口</span><span data-lang="en">Application entry points</span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">签名</span><span data-lang="en">Signature</span></th><th><span data-lang="zh">用途</span><span data-lang="en">Purpose</span></th></tr></thead>
+        <tbody>
+          <tr><td><code>int CreateAppWindow(const AppOptions&amp;)</code></td><td><span data-lang="zh">建窗并运行消息循环，返回进程退出码</span><span data-lang="en">Create a window and run the loop; returns the exit code</span></td></tr>
+          <tr><td><code>int CreateAppWindow(title, w, h, build)</code></td><td><span data-lang="zh">最简重载，省略内容回调即空白窗口</span><span data-lang="en">Short overload; omit the build callback for an empty window</span></td></tr>
+          <tr><td><code>std::unique_ptr&lt;Surface&gt; CreateAppSurface(const AppOptions&amp;)</code></td><td><span data-lang="zh">只建窗不阻塞，多窗口时持有到循环结束</span><span data-lang="en">Create without blocking; hold it until the loop ends</span></td></tr>
+          <tr><td><code>int RunAppLoop()</code> / <code>void QuitApp()</code></td><td><span data-lang="zh">进程级共享消息循环 / 关闭全部窗口</span><span data-lang="en">Process-wide shared loop / close all windows</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh"><code>AppOptions</code> 的字段：<code>Title</code>、<code>Width</code>、<code>Height</code>、<code>MinWidth</code>（320）、<code>MinHeight</code>（200）、<code>Dark</code>、<code>Pal</code>、<code>Accent</code>、<code>CustomFrame</code>（true）、<code>TitleBar</code>（true）、<code>TitleBarFill</code>、<code>BodyPad</code>、<code>Build</code>。</p>
+    <p data-lang="en"><code>AppOptions</code> fields: <code>Title</code>, <code>Width</code>, <code>Height</code>, <code>MinWidth</code> (320), <code>MinHeight</code> (200), <code>Dark</code>, <code>Pal</code>, <code>Accent</code>, <code>CustomFrame</code> (true), <code>TitleBar</code> (true), <code>TitleBarFill</code>, <code>BodyPad</code>, <code>Build</code>.</p>
+
+    <h3 id="api-surface">Surface</h3>
+    <details>
+      <summary><span data-lang="zh">宿主窗口方法（展开）</span><span data-lang="en">Host window methods (expand)</span></summary>
+      <div class="detail-body">
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><td><code>Create(title, w, h, dark)</code></td><td><span data-lang="zh">创建窗口，客户区尺寸以 DIP 计</span><span data-lang="en">Create the window; client size in DIP</span></td></tr>
+              <tr><td><code>SetCustomFrame(on)</code> / <code>CustomFrame()</code> / <code>SetResizeBorder(dip)</code></td><td><span data-lang="zh">自绘边框与边缘缩放宽度</span><span data-lang="en">Custom frame and resize-border width</span></td></tr>
+              <tr><td><code>SetMinSize(w, h)</code></td><td><span data-lang="zh">窗口最小尺寸</span><span data-lang="en">Minimum window size</span></td></tr>
+              <tr><td><code>SetRoot(widget)</code> / <code>Root()</code> / <code>Run()</code></td><td><span data-lang="zh">挂载控件树、取根、进入消息循环</span><span data-lang="en">Mount the tree, get the root, enter the loop</span></td></tr>
+              <tr><td><code>SetTheme(pal, dark)</code> / <code>SetDark</code> / <code>SetAccent</code> / <code>Th()</code></td><td><span data-lang="zh">主题与强调色，同步 DWM 标题栏明暗</span><span data-lang="en">Theme and accent, syncing the DWM title bar</span></td></tr>
+              <tr><td><code>AddOverlay</code> / <code>RemoveOverlay</code> / <code>SetDismiss</code></td><td><span data-lang="zh">覆盖层与“点外部关闭”</span><span data-lang="en">Overlays and click-outside dismissal</span></td></tr>
+              <tr><td><code>Invalidate</code> / <code>InvalidateRectD</code> / <code>PlayAnim</code> / <code>KickAnim</code></td><td><span data-lang="zh">整窗或局部重绘、唤醒动画帧循环</span><span data-lang="en">Full or partial repaint, wake the animation loop</span></td></tr>
+              <tr><td><code>Focused()</code> / <code>SetFocus(w)</code></td><td><span data-lang="zh">焦点读写，自动滚入最近的 ScrollView</span><span data-lang="en">Focus access; scrolls the nearest ScrollView into view</span></td></tr>
+              <tr><td><code>ClientSize()</code> / <code>DpiScale()</code> / <code>Hwnd()</code></td><td><span data-lang="zh">客户区尺寸、DPI 缩放、原生句柄</span><span data-lang="en">Client size, DPI scale, native handle</span></td></tr>
+              <tr><td><code>ShowInfoBar(text, tone, seconds)</code> / <code>CloseInfoBars</code> / <code>SetInfoBarWidth</code></td><td><span data-lang="zh">右上角提示条</span><span data-lang="en">Top-right info bars</span></td></tr>
+              <tr><td><code>Animating()</code> / <code>Pump(dt)</code></td><td><span data-lang="zh">共享循环用：是否有动画、推进一帧</span><span data-lang="en">For a shared loop: animating state and one frame step</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <h3 id="api-widget">Widget</h3>
+    <details>
+      <summary><span data-lang="zh">控件基类字段与可重写方法（展开）</span><span data-lang="en">Base-class fields and overridables (expand)</span></summary>
+      <div class="detail-body">
+        <p data-lang="zh">布局参数全部是公开字段：<code>W</code> / <code>H</code>（&lt;0 按内容）、<code>Grow</code>、<code>Basis</code>、<code>ML/MT/MR/MB</code>、<code>PL/PT/PR/PB</code>；行为开关 <code>Visible</code>、<code>Enabled</code>、<code>Interactive</code>、<code>Clip</code>、<code>Opacity</code>、<code>Caption</code>、<code>Tooltip</code>、<code>FillHost</code>、<code>FocusRing</code>。</p>
+        <p data-lang="en">Layout parameters are public fields: <code>W</code>/<code>H</code> (&lt;0 for content), <code>Grow</code>, <code>Basis</code>, <code>ML/MT/MR/MB</code>, <code>PL/PT/PR/PB</code>; behaviour flags <code>Visible</code>, <code>Enabled</code>, <code>Interactive</code>, <code>Clip</code>, <code>Opacity</code>, <code>Caption</code>, <code>Tooltip</code>, <code>FillHost</code>, <code>FocusRing</code>.</p>
+        <p data-lang="zh">可重写：<code>Desired(availW, availH)</code>、<code>LayoutChildren()</code>、<code>Paint(PaintCtx&amp;)</code>、<code>Update(dt)</code>、<code>HitTest</code>、<code>Focusable()</code>、<code>OnClick/OnClickAt</code>、<code>OnPressAt</code>、<code>OnDrag</code>、<code>OnChar</code>、<code>OnKeyDown</code>、<code>OnWheel</code>、<code>OnImeMessage</code>、<code>CursorAt</code>。树操作：<code>Add</code>、<code>Clear</code>、<code>Detach</code>；入场动画：<code>FadeIn(dur, dy, delay)</code>、<code>StaggerIn(dur, dy, step, maxDelay)</code>。</p>
+        <p data-lang="en">Overridable: <code>Desired(availW, availH)</code>, <code>LayoutChildren()</code>, <code>Paint(PaintCtx&amp;)</code>, <code>Update(dt)</code>, <code>HitTest</code>, <code>Focusable()</code>, <code>OnClick/OnClickAt</code>, <code>OnPressAt</code>, <code>OnDrag</code>, <code>OnChar</code>, <code>OnKeyDown</code>, <code>OnWheel</code>, <code>OnImeMessage</code>, <code>CursorAt</code>. Tree operations: <code>Add</code>, <code>Clear</code>, <code>Detach</code>; entrance animation: <code>FadeIn(dur, dy, delay)</code>, <code>StaggerIn(dur, dy, step, maxDelay)</code>.</p>
+      </div>
+    </details>
+
+    <h3 id="api-layout"><span data-lang="zh">布局与容器</span><span data-lang="en">Layout and containers</span></h3>
+    <div class="matrix">
+      <div class="cell"><b>VBox(gap) / HBox(gap)</b><span data-lang="zh">一维栈，按 Grow 分配剩余空间</span><span data-lang="en">One-dimensional stack distributing slack by Grow</span></div>
+      <div class="cell"><b>Card</b><span data-lang="zh">底色 / 圆角 / 描边，可选阴影</span><span data-lang="en">Fill, radius, border and optional shadow</span></div>
+      <div class="cell"><b>Grid(cols, gap)</b><span data-lang="zh">等宽网格，行高取最高子项</span><span data-lang="en">Equal columns; row height follows the tallest child</span></div>
+      <div class="cell"><b>ScrollView</b><span data-lang="zh">单子项纵向滚动，自绘滚动条</span><span data-lang="en">Single-child vertical scroll with a custom scrollbar</span></div>
+      <div class="cell"><b>Absolute</b><span data-lang="zh">按 X / Y / W / H 绝对定位</span><span data-lang="en">Absolute placement via X / Y / W / H</span></div>
+      <div class="cell"><b>Spacer(size) / Divider()</b><span data-lang="zh">留白与 1px 分隔线</span><span data-lang="en">Spacing and a 1 px divider</span></div>
+    </div>
+
+    <h3 id="api-controls"><span data-lang="zh">17 个控件</span><span data-lang="en">The 17 controls</span></h3>
+    <details>
+      <summary><span data-lang="zh">控件与主要成员（展开）</span><span data-lang="en">Controls and key members (expand)</span></summary>
+      <div class="detail-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><span data-lang="zh">控件</span><span data-lang="en">Control</span></th><th><span data-lang="zh">主要成员</span><span data-lang="en">Key members</span></th></tr></thead>
+            <tbody>
+              <tr><td><code>Label</code></td><td>Text, Size, Weight, LineHeight, UseType, Color, Align, VAlignMode, Wrap, Ellipsis</td></tr>
+              <tr><td><code>Button</code></td><td>Text, Glyph, Primary, Danger, MinWidth, Clicked</td></tr>
+              <tr><td><code>IconButton</code></td><td>Glyph, GlyphSize, Ghost, Clicked</td></tr>
+              <tr><td><code>Checkbox</code></td><td>On, Text, Changed(bool)</td></tr>
+              <tr><td><code>Switch</code></td><td>On, Changed(bool)</td></tr>
+              <tr><td><code>Input</code></td><td>Text, Placeholder, Caret, SelAnchor, MaxWidth, Changed, Submitted</td></tr>
+              <tr><td><code>Slider</code></td><td>Value (0..1), Changed(float)</td></tr>
+              <tr><td><code>Progress</code></td><td>Value (0..1), Indeterminate</td></tr>
+              <tr><td><code>Segmented</code></td><td>Items, Active, Changed(int)</td></tr>
+              <tr><td><code>Badge</code></td><td>Text, ToneKind</td></tr>
+              <tr><td><code>NavItem</code></td><td>Text, Glyph, Active, Clicked（同容器内自动单选）</td></tr>
+              <tr><td><code>ListRow</code></td><td>Title, Sub, Right, Selected, Clicked</td></tr>
+              <tr><td><code>Dropdown</code></td><td>Items, Selected, MenuWidth, Changed(int)</td></tr>
+              <tr><td><code>Tooltip</code></td><td><span data-lang="zh">通常由 <code>Widget::Tooltip</code> 触发，无需手动创建</span><span data-lang="en">Usually triggered by <code>Widget::Tooltip</code></span></td></tr>
+              <tr><td><code>InfoBar</code></td><td><span data-lang="zh">由 <code>Surface::ShowInfoBar</code> 创建</span><span data-lang="en">Created by <code>Surface::ShowInfoBar</code></span></td></tr>
+              <tr><td><code>Dialog</code></td><td>Open(host, title, body, actions, dismissOnScrim, width)</td></tr>
+              <tr><td><code>TitleBar</code></td><td>Title, BtnWidth, ShowMinimize/Maximize/Close, Fill, NavItems, NavIndex, NavCentered, NavChanged</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <h3 id="api-gfx">Gfx</h3>
+    <p data-lang="zh">自定义控件在 <code>Paint</code> 里通过 <code>PaintCtx</code> 拿到 <code>Gfx</code>、<code>Tokens</code>、<code>Metrics</code>、<code>scale</code> 与 <code>time</code>。绘制方法包括 <code>Clear</code>、<code>FillRect</code>、<code>RoundRect</code>、<code>StrokeRect</code>、<code>Line</code>、<code>Circle</code>、<code>StrokeCircle</code>、<code>Shadow</code>、<code>Text</code>、<code>TextTrim</code>、<code>Glyph</code>、<code>TextW</code>、<code>PushClip</code>/<code>PopClip</code>。</p>
+    <p data-lang="en">Inside <code>Paint</code>, <code>PaintCtx</code> exposes <code>Gfx</code>, <code>Tokens</code>, <code>Metrics</code>, <code>scale</code> and <code>time</code>. Drawing methods include <code>Clear</code>, <code>FillRect</code>, <code>RoundRect</code>, <code>StrokeRect</code>, <code>Line</code>, <code>Circle</code>, <code>StrokeCircle</code>, <code>Shadow</code>, <code>Text</code>, <code>TextTrim</code>, <code>Glyph</code>, <code>TextW</code>, <code>PushClip</code>/<code>PopClip</code>.</p>
+
+    <h2 id="quickstart"><span data-lang="zh">快速开始</span><span data-lang="en">Quick start</span></h2>
+
+<pre data-file="main.cpp">#include &lt;windows.h&gt;
+#include &lt;vcui/vcui.h&gt;
+
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
+    return vcui::CreateAppWindow(vcui::AppOptions{
+        .Title  = L"My App",
+        .Width  = 960,
+        .Height = 640,
+        .Dark   = false,
+        .Build  = [](vcui::Widget&amp; body) {
+            auto page = vcui::VBox(14.f);
+            page-&gt;Pad(24.f);
+            page-&gt;Add(std::make_shared&lt;vcui::Label&gt;(L"Hello", 20.f, 600));
+
+            auto card = std::make_shared&lt;vcui::Card&gt;();
+            card-&gt;Add(std::make_shared&lt;vcui::Input&gt;(L"Type something..."));
+            card-&gt;Add(std::make_shared&lt;vcui::Button&gt;(L"OK", true));
+            page-&gt;Add(card);
+
+            body.Add(page);
+        }
+    });
+}</pre>
+
+    <h2 id="build"><span data-lang="zh">构建</span><span data-lang="en">Build</span></h2>
+
+<pre data-file="PowerShell">cmake -S . -B .build -G "Visual Studio 17 2022" -A x64
+cmake --build .build --config Release</pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">选项</span><span data-lang="en">Option</span></th><th><span data-lang="zh">默认</span><span data-lang="en">Default</span></th><th><span data-lang="zh">说明</span><span data-lang="en">Description</span></th></tr></thead>
+        <tbody>
+          <tr><td><code>VCUI_BUILD_SHARED</code></td><td>OFF</td><td><span data-lang="zh">构建 DLL + 导入库</span><span data-lang="en">Build a DLL plus import library</span></td></tr>
+          <tr><td><code>VCUI_BUILD_DEMO</code></td><td>ON</td><td><span data-lang="zh">构建四个示例程序</span><span data-lang="en">Build the four demo executables</span></td></tr>
+          <tr><td><code>VCUI_STATIC_RUNTIME</code></td><td>OFF</td><td><span data-lang="zh"><code>/MT</code>，静态链接 MSVC 运行时</span><span data-lang="en"><code>/MT</code>, static MSVC runtime</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="integrate"><span data-lang="zh">集成</span><span data-lang="en">Integration</span></h2>
+    <div class="tabs">
+      <input type="radio" name="int-tab" id="int-a" checked>
+      <input type="radio" name="int-tab" id="int-b">
+      <input type="radio" name="int-tab" id="int-c">
+      <div class="tab-bar">
+        <label for="int-a">add_subdirectory</label>
+        <label for="int-b">find_package</label>
+        <label for="int-c">vcpkg</label>
+      </div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="CMakeLists.txt">add_subdirectory(path/to/XGStudio-cpp-UI)
+target_link_libraries(YourApp PRIVATE VCUI::vcui)</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="CMakeLists.txt">cmake --install .build --config Release --prefix path/to/install
+
+find_package(VCUI 1.0 REQUIRED)
+target_link_libraries(YourApp PRIVATE VCUI::vcui)
+# configure with -DCMAKE_PREFIX_PATH=path/to/install</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="PowerShell">vcpkg install vcui --overlay-ports=path/to/port</pre>
+        </div>
+      </div>
+    </div>
+    <p data-lang="zh">公开头是 UTF-8 with BOM，不加 <code>/utf-8</code> 也能正确解析；用 <code>add_subdirectory</code> 时 <code>/std:c++17</code> 会自动传递给消费方。</p>
+    <p data-lang="en">Public headers are UTF-8 with BOM and parse correctly without <code>/utf-8</code>; <code>add_subdirectory</code> propagates <code>/std:c++17</code> to consumers.</p>
+
+    <h2 id="requirements"><span data-lang="zh">系统要求</span><span data-lang="en">Requirements</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">项</span><span data-lang="en">Item</span></th><th><span data-lang="zh">要求</span><span data-lang="en">Requirement</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">操作系统</span><span data-lang="en">OS</span></td><td><span data-lang="zh">Windows 10 1703（15063）及以上，含 Windows 11</span><span data-lang="en">Windows 10 1703 (15063)+, including Windows 11</span></td></tr>
+          <tr><td><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></td><td><span data-lang="zh">MSVC 2019 / 2022，C++17</span><span data-lang="en">MSVC 2019/2022, C++17</span></td></tr>
+          <tr><td><span data-lang="zh">架构</span><span data-lang="en">Architecture</span></td><td><span data-lang="zh">x64 已验证</span><span data-lang="en">x64 verified</span></td></tr>
+          <tr><td><span data-lang="zh">图形</span><span data-lang="en">Graphics</span></td><td><span data-lang="zh">Direct2D 1.0 兼容，含 WARP</span><span data-lang="en">Direct2D 1.0 compatible, including WARP</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="debug"><span data-lang="zh">调试开关</span><span data-lang="en">Debug switches</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">变量</span><span data-lang="en">Variable</span></th><th><span data-lang="zh">作用</span><span data-lang="en">Effect</span></th></tr></thead>
+        <tbody>
+          <tr><td><code>VCUI_FPS=1</code></td><td><span data-lang="zh">标题栏显示 fps 与 paint 耗时</span><span data-lang="en">Show fps and paint time in the title bar</span></td></tr>
+          <tr><td><code>VCUI_NOSHADOW=1</code></td><td><span data-lang="zh">跳过阴影，定位阴影开销</span><span data-lang="en">Skip shadows to isolate their cost</span></td></tr>
+          <tr><td><code>VCUI_NOTEXT=1</code></td><td><span data-lang="zh">跳过文字，定位排版开销</span><span data-lang="en">Skip text to isolate layout cost</span></td></tr>
+          <tr><td><code>VCUI_DEMO_DARK=1</code> / <code>VCUI_NAV_CENTER=1</code> / <code>VCUI_PAGE=0..3</code></td><td><span data-lang="zh">仅 <code>VCUIFrameDemo</code>：深色启动、居中导航、指定启动页</span><span data-lang="en"><code>VCUIFrameDemo</code> only: dark start, centred nav, starting page</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="license"><span data-lang="zh">许可</span><span data-lang="en">License</span></h2>
+    <p data-lang="zh">Copyright 2026 XGstudio，Apache License 2.0。每个源文件头部带完整声明，末行 <code>SPDX-License-Identifier: Apache-2.0</code>。</p>
+    <p data-lang="en">Copyright 2026 XGstudio, Apache License 2.0. Every source file carries the full notice ending with <code>SPDX-License-Identifier: Apache-2.0</code>.</p>
+    <ul>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-UI" target="_blank" rel="noopener"><span data-lang="zh">源码与完整 README</span><span data-lang="en">Source and full README</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-UI/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

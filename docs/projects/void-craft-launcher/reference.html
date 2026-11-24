@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="Void Craft Launcher · 参考" data-en="Void Craft Launcher · Reference">Void Craft Launcher · 参考</title>
+<meta name="description" content="VCL 参考：启动流程、后端切换、目录识别与轮询事件模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>Void Craft Launcher</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">参考</span><span data-lang="en">Reference</span>
+    </p>
+
+    <h1><span data-lang="zh">参考</span><span data-lang="en">Reference</span></h1>
+    <p class="sub" data-lang="zh">VCL 的四条主线：目录即数据模型、后端可替换、启动是一条轮询管道、运行时统一。</p>
+    <p class="sub" data-lang="en">Four threads in VCL: the directory is the data model, the backend is replaceable, launch is a polled pipeline, and the runtime is uniform.</p>
+
+    <div class="note">
+      <p data-lang="zh">VCL 尚无可用界面截图，因此画廊用<strong>结构示意图</strong>呈现；代码按架构文档的接口约定整理为精简示意，不是已落地的源码。</p>
+      <p data-lang="en">VCL has no usable screenshots yet, so the gallery shows <strong>structural schematics</strong>; snippets are minimal illustrations of the documented contracts, not shipped source.</p>
+    </div>
+
+    <h2 id="gallery"><span data-lang="zh">流程画廊</span><span data-lang="en">Flow gallery</span></h2>
+    <div class="gallery">
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span>global.json</span><i>→</i><span class="acc">Root</span><i>→</i><span>扫 versions</span><i>→</i><span>选实例</span><i>→</i><span class="acc">Launch</span><i>→</i><span>Poll</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">启动：配置 → Root → 扫描 → 启动请求 → 轮询到结束</span><span data-lang="en">Launch: config → root → scan → request → poll until finished</span></figcaption>
+      </figure>
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span>InstallRequest</span><i>→</i><span class="acc">install_start</span><i>→</i><span>poll 进度 / 日志</span><i>→</i><span>Finished</span><i>→</i><span>重扫</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">安装：与启动共用同一条事件管道</span><span data-lang="en">Install: the same event pipeline as launch</span></figcaption>
+      </figure>
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span>UI</span><i>→</i><span class="acc">IBackend</span><i>→</i><span>MockBackend</span><i>/</i><span>lighty::Backend</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">后端：页面代码不变，只换实现</span><span data-lang="en">Backend: swap the implementation, keep the pages</span></figcaption>
+      </figure>
+    </div>
+
+    <h2 id="layout"><span data-lang="zh">目录即数据模型</span><span data-lang="en">The directory is the data model</span></h2>
+    <p data-lang="zh">VCL 不维护自己的实例数据库，<code>versions</code> 目录就是数据库。识别规则只有一条：子目录里存在同名 <code>.json</code> 才算一个版本；中文与空格目录名照常支持。</p>
+    <p data-lang="en">VCL keeps no instance database of its own — the <code>versions</code> directory is the database. One rule decides recognition: a subdirectory counts as a version only if it contains a <code>.json</code> of the same name; Chinese and spaced names are supported as-is.</p>
+
+<pre data-file="scan (simplified)">std::vector&lt;VersionEntry&gt; VersionScanner::Scan(const std::string&amp; rootDir) const {
+    std::vector&lt;VersionEntry&gt; out;
+    for (auto&amp; dir : ListDirectories(Join(rootDir, "versions"))) {
+        std::string json = Join(dir, FileName(dir) + ".json");
+        if (!Exists(json)) continue;                  // 没有同名 json → 不是版本
+        VersionEntry e = PeekHeader(json);            // 只读 id/type/inheritsFrom 等头部
+        if (!e.id.empty()) out.push_back(e);          // 坏 JSON 跳过并记日志
+    }
+    return out;
+}</pre>
+
+    <p data-lang="zh">版本隔离的判定同样落在目录上，而不是配置里的开关：</p>
+    <p data-lang="en">Isolation is also decided by directories rather than a config switch:</p>
+
+<pre data-file="gameDir heuristic">if (Exists(join(versionDir, "mods")) || Exists(join(versionDir, "config"))
+ || Exists(join(versionDir, "saves")) || Exists(join(versionDir, "options.txt")))
+    mode = VersionDir;     // 版本目录里已有游戏数据 → 隔离
+else
+    mode = RootDir;        // 否则与所有版本共享
+// UI 上永远可手动改，导入不做不可逆判断</pre>
+
+    <p data-lang="zh">私有元数据只放在 <code>versions\&lt;folder&gt;\.vcl\</code>（<code>instance.json</code> 与可选图标），PCL 不会读它；全局配置与缓存放在 <code>%APPDATA%</code> / <code>%LOCALAPPDATA%</code>，不进游戏目录。</p>
+    <p data-lang="en">Private metadata lives only in <code>versions\&lt;folder&gt;\.vcl\</code> (<code>instance.json</code> plus an optional icon), which PCL never reads; global config and caches live under <code>%APPDATA%</code> / <code>%LOCALAPPDATA%</code>, never inside the game directory.</p>
+
+    <h2 id="backend"><span data-lang="zh">后端可替换</span><span data-lang="en">A replaceable backend</span></h2>
+    <p data-lang="zh">四个能力被抽成一个纯虚接口，界面阶段接假实现，真实阶段接 Rust 封装。页面代码只认接口，因此替换后端不触碰 UI。</p>
+    <p data-lang="en">Four capabilities sit behind one pure virtual interface. The UI phase uses a fake implementation; the real phase uses the Rust wrapper. Pages only know the interface, so swapping backends never touches the UI.</p>
+
+<pre data-file="IBackend.h">struct IBackend {
+    virtual ~IBackend() = default;
+    virtual std::vector&lt;VersionEntry&gt; ListVersions(const RootInfo&amp; root) = 0;
+    virtual bool Install(const InstallRequest&amp; req, IProgressSink&amp; sink, std::string&amp; err) = 0;
+    virtual bool Launch(const LaunchRequest&amp; req, ILaunchSink&amp; sink, std::string&amp; err) = 0;
+    virtual std::vector&lt;JavaInfo&gt; FindJava() = 0;
+};
+
+// 启动时二选一：Mock 提供 2~3 个假实例、0.3s 一跳的假进度
+std::unique_ptr&lt;IBackend&gt; backend = useMock ? MakeMockBackend() : MakeLightyBackend();</pre>
+
+    <p data-lang="zh">两个 sink 都是轮询式：<code>Poll()</code> 取事件，不注册回调。这样 UI 线程不会被 Rust 侧线程反向调用，也不需要处理重入。</p>
+    <p data-lang="en">Both sinks are polled: <code>Poll()</code> pulls events and no callback is registered. The UI thread is never called back from Rust threads and never has to handle reentrancy.</p>
+
+    <h2 id="launch"><span data-lang="zh">启动是一条管道</span><span data-lang="en">Launch is a pipeline</span></h2>
+    <p data-lang="zh">启动流程固定为八步，每一步只做一件事；安装走完全相同的形状，只是把 launch 换成 install，结束时重扫版本目录。</p>
+    <p data-lang="en">Launch is a fixed eight-step pipeline, one job per step. Installation has exactly the same shape with install in place of launch, followed by a rescan of the versions directory.</p>
+
+    <div class="tabs">
+      <input type="radio" name="lc-tab" id="lc-a" checked>
+      <input type="radio" name="lc-tab" id="lc-b">
+      <div class="tab-bar"><label for="lc-a"><span data-lang="zh">八步顺序</span><span data-lang="en">The eight steps</span></label><label for="lc-b"><span data-lang="zh">轮询循环</span><span data-lang="en">Poll loop</span></label></div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="launch flow">1  RootManager.Load(global.json) → 选中 Root
+2  VersionScanner.Scan(root)      → 版本列表
+3  InstanceStore.Load(folder)     → instance.json（缺失即默认）
+4  组装 LaunchRequest(root, folder, gameDir, memoryMb, jvmArgs, javaPath, 离线身份)
+5  backend.Launch(req, sink)      → lighty_launch_start(...)
+6  UI 每 200ms: lighty_launch_poll → 状态 / 日志 / 进度 → LogHub + 日志面板
+7  Finished: 写回 lastPlayedAt / totalPlayTimeSec
+8  非 0 退出且日志含 Exception → 提供「查看日志 / 打开目录」</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="poll (simplified)">while (running) {
+    LightyEvent ev;
+    while (lighty_launch_poll(handle, &amp;ev)) {   // 非阻塞，事件队列固定容量
+        switch (ev.kind) {
+        case Progress:    progress = ev.progress; break;   // done / total / bytesPerSec
+        case Log:         logHub.Append(ev.level, ev.text); break;
+        case StateChanged: state = ev.state; break;
+        case Finished:    running = false; code = ev.code; break;
+        case Failed:      running = false; err = ev.msg; break;
+        }
+    }
+    Sleep(200);                                   // 与 Snapshot() 同频
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <p data-lang="zh">进度用原子计数，事件队列容量固定：满时丢弃并计数，绝不阻塞 Rust 侧工作线程——与 XGDL、XGLOG 是同一套口径。</p>
+    <p data-lang="en">Progress uses atomic counters and the event queue has a fixed capacity: on overflow it drops and counts instead of blocking the Rust worker — the same policy as XGDL and XGLOG.</p>
+
+    <h2 id="abi"><span data-lang="zh">跨语言边界</span><span data-lang="en">The cross-language boundary</span></h2>
+    <p data-lang="zh">Lighty 是 Rust 静态库，边界规则必须死守，否则问题会以「随机崩溃」的形式出现：</p>
+    <p data-lang="en">Lighty is a Rust static library; boundary rules must be strict, or failures show up as random crashes:</p>
+    <ul>
+      <li data-lang="zh">头文件只有 C 类型（<code>const char*</code> UTF-8、<code>int32_t</code>、<code>uint64_t</code>、不透明句柄），不出现 <code>std::string</code>、引用或 enum class。</li>
+      <li data-lang="en">Headers expose C types only (<code>const char*</code> UTF-8, <code>int32_t</code>, <code>uint64_t</code>, opaque handles) — no <code>std::string</code>, references or enum classes.</li>
+      <li data-lang="zh">Rust 每个入口包 <code>catch_unwind</code>，panic 转错误码，绝不跨边界展开。</li>
+      <li data-lang="en">Every Rust entry point wraps <code>catch_unwind</code> and turns panics into error codes; unwinding never crosses the boundary.</li>
+      <li data-lang="zh">错误用「返回码 + <code>last_error(handle)</code>」；字符串由 Lighty 持有，调用方只读。</li>
+      <li data-lang="en">Errors use a return code plus <code>last_error(handle)</code>; strings are owned by Lighty and read-only for the caller.</li>
+      <li data-lang="zh">内存谁分配谁释放；跨边界只传调用方缓冲或 Lighty 分配 + Lighty 释放。</li>
+      <li data-lang="en">Whoever allocates frees; across the boundary only caller buffers or Lighty-allocated plus Lighty-freed memory is passed.</li>
+      <li data-lang="zh">全工程 <code>/MD</code>，Rust 侧 <code>crt-static</code> 关闭，保证两侧共用同一份 CRT。</li>
+      <li data-lang="en">The whole project uses <code>/MD</code> with <code>crt-static</code> disabled on the Rust side, so both sides share one CRT.</li>
+    </ul>
+
+    <h2 id="tradeoffs"><span data-lang="zh">取舍</span><span data-lang="en">Trade-offs</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">选择</span><span data-lang="en">Choice</span></th><th><span data-lang="zh">得到的</span><span data-lang="en">Gain</span></th><th><span data-lang="zh">代价</span><span data-lang="en">Cost</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">目录即数据库</span><span data-lang="en">Directory as database</span></td><td><span data-lang="zh">与 PCL / 官方启动器可直接互换</span><span data-lang="en">Direct interchange with PCL and the official launcher</span></td><td><span data-lang="zh">实例侧设置只能塞进 <code>.vcl\</code>，字段扩展要克制</span><span data-lang="en">Instance settings must fit inside <code>.vcl\</code>, so field growth is constrained</span></td></tr>
+          <tr><td><span data-lang="zh">启动外包给 Lighty</span><span data-lang="en">Launch delegated to Lighty</span></td><td><span data-lang="zh">不重写 classpath、rules、Forge processors</span><span data-lang="en">No rewriting of classpath, rules or Forge processors</span></td><td><span data-lang="zh">C ABI 契约、外部依赖版本、Rust 工具链都成了约束</span><span data-lang="en">The C ABI contract, dependency revisions and the Rust toolchain become constraints</span></td></tr>
+          <tr><td><span data-lang="zh">依赖源码内置</span><span data-lang="en">Vendored dependencies</span></td><td><span data-lang="zh">整目录覆盖同步，补丁可控</span><span data-lang="en">Whole-directory sync with controllable patches</span></td><td><span data-lang="zh">上游改动要手工回写 <code>THIRD_PARTY.md</code></span><span data-lang="en">Upstream changes must be recorded by hand in <code>THIRD_PARTY.md</code></span></td></tr>
+          <tr><td><span data-lang="zh">统一 <code>/MD</code></span><span data-lang="en">Uniform <code>/MD</code></span></td><td><span data-lang="zh">跨语言传内存与句柄安全</span><span data-lang="en">Safe memory and handle passing across languages</span></td><td><span data-lang="zh">发布包必须带 VC++ 运行库</span><span data-lang="en">Releases must ship the VC++ runtime</span></td></tr>
+          <tr><td><span data-lang="zh">UI 只发 Intent</span><span data-lang="en">UI dispatches Intents only</span></td><td><span data-lang="zh">业务可命令行跑通，UI 可整体替换</span><span data-lang="en">Business logic runs headless; the UI can be replaced wholesale</span></td><td><span data-lang="zh">多一层间接，简单改动也要过 Intent</span><span data-lang="en">An extra indirection even for small changes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="development.html"><span data-lang="zh">开发：核心接口、构建与里程碑</span><span data-lang="en">Development: core APIs, build and milestones</span></a></li>
+      <li><a href="../xgstudio-cpp-ui/reference.html"><span data-lang="zh">UI 参考：VCUI 的渲染与交互机制</span><span data-lang="en">UI reference: VCUI rendering and interaction</span></a></li>
+      <li><a href="../xgstudio-cpp-core/reference.html"><span data-lang="zh">Core 参考：下载、日志与配置</span><span data-lang="en">Core reference: download, logging and config</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

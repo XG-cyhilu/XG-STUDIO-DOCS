@@ -45,14 +45,16 @@
 │   ├── js/site.js                # shell, i18n, theme, copy
 │   └── img/                      # screenshots
 ├── projects/
-│   ├── xgstudio-cpp-ui.html
-│   ├── xgstudio-cpp-core.html
-│   └── void-craft-launcher.html
+│   ├── xgstudio-cpp-ui/          # index / reference / development
+│   ├── xgstudio-cpp-core/        # index / reference / development
+│   └── void-craft-launcher/      # index / reference / development
 └── general/
     ├── quick-start.html
     ├── toolchain.html
     ├── design.html
     └── licensing.html</pre>
+    <p data-lang="zh">每个项目固定三页：<code>index.html</code> 是说明（项目定位、技术栈、界面），<code>reference.html</code> 是参考（画廊与核心机制），<code>development.html</code> 是开发（精确技术栈、目录结构、API、快速开始）。左侧导航为树状，点击项目节点直接进入说明页。</p>
+    <p data-lang="en">Each project has exactly three pages: <code>index.html</code> for the overview (positioning, stack, interface), <code>reference.html</code> for the gallery and core mechanisms, and <code>development.html</code> for the precise stack, layout, APIs and quick start. The sidebar is a tree, and clicking a project node opens its overview.</p>
 
     <h2 id="preview"><span data-lang="zh">本地预览</span><span data-lang="en">Local preview</span></h2>
 
@@ -66,10 +68,10 @@ python -m http.server 8080
 
     <h2 id="add-page"><span data-lang="zh">新增或修改文档</span><span data-lang="en">Adding or editing pages</span></h2>
     <ol>
-      <li data-lang="zh"><strong>放置页面：</strong>项目文档放入 <code>docs/projects/&lt;slug&gt;.html</code>，通用文档放入 <code>docs/general/&lt;slug&gt;.html</code>。</li>
-      <li data-lang="en"><strong>Place the file:</strong> project guides go to <code>docs/projects/&lt;slug&gt;.html</code>; general guides to <code>docs/general/&lt;slug&gt;.html</code>.</li>
-      <li data-lang="zh"><strong>复用页面骨架：</strong>顶层结构保持 <code>header / layout / sidebar / main / pager / footer</code> 不变，只替换 <code>&lt;main&gt;</code> 内的内容；<code>data-root</code> 在 <code>projects/</code> 与 <code>general/</code> 下为 <code>..</code>，在根目录为 <code>.</code>。</li>
-      <li data-lang="en"><strong>Reuse the skeleton:</strong> keep the <code>header / layout / sidebar / main / pager / footer</code> structure and replace only the contents of <code>&lt;main&gt;</code>; <code>data-root</code> is <code>..</code> under <code>projects/</code> and <code>general/</code>, and <code>.</code> at the root.</li>
+      <li data-lang="zh"><strong>放置页面：</strong>项目文档放入 <code>docs/projects/&lt;slug&gt;/index|reference|development.html</code>，通用文档放入 <code>docs/general/&lt;slug&gt;.html</code>。</li>
+      <li data-lang="en"><strong>Place the file:</strong> project guides go to <code>docs/projects/&lt;slug&gt;/index|reference|development.html</code>; general guides to <code>docs/general/&lt;slug&gt;.html</code>.</li>
+      <li data-lang="zh"><strong>复用页面骨架：</strong>顶层结构保持 <code>header / layout / sidebar / main / page-toc / pager / footer</code> 不变，只替换 <code>&lt;main&gt;</code> 内的内容；<code>data-root</code> 在项目目录下为 <code>../..</code>，在 <code>general/</code> 下为 <code>..</code>，在根目录为 <code>.</code>。</li>
+      <li data-lang="en"><strong>Reuse the skeleton:</strong> keep the <code>header / layout / sidebar / main / page-toc / pager / footer</code> structure and replace only the contents of <code>&lt;main&gt;</code>; <code>data-root</code> is <code>../..</code> inside a project directory, <code>..</code> under <code>general/</code>, and <code>.</code> at the root.</li>
       <li data-lang="zh"><strong>登记导航：</strong>在 <code>assets/js/site.js</code> 的 <code>NAV</code> 数组中按分组添加一个条目（中文与英文标题），侧边栏与上下页导航会自动生成。</li>
       <li data-lang="en"><strong>Register navigation:</strong> add an entry with Chinese and English titles to the <code>NAV</code> array in <code>assets/js/site.js</code>; the sidebar and previous/next pager update automatically.</li>
       <li data-lang="zh"><strong>更新首页：</strong>如需在首页目录中出现，在 <code>docs/index.html</code> 的对应分区添加一张 <code>.card</code>。</li>

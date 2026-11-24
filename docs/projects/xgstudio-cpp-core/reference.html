@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-Core · 参考" data-en="XGStudio-cpp-Core · Reference">XGStudio-cpp-Core · 参考</title>
+<meta name="description" content="XGStudio-cpp-Core 参考：模块画廊与下载、日志、配置三段核心逻辑。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-Core</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">参考</span><span data-lang="en">Reference</span>
+    </p>
+
+    <h1><span data-lang="zh">参考</span><span data-lang="en">Reference</span></h1>
+    <p class="sub" data-lang="zh">三条贯穿全库的技术脉络，以及它们背后的取舍。</p>
+    <p class="sub" data-lang="en">Three threads running through the library, and the trade-offs behind them.</p>
+
+    <div class="note">
+      <p data-lang="zh">代码为<strong>机制示意</strong>，经过精简以突出主路径，不是源码逐行原样。</p>
+      <p data-lang="en">Snippets are <strong>illustrative simplifications</strong> of the main path, not verbatim source.</p>
+    </div>
+
+    <h2 id="gallery"><span data-lang="zh">机制画廊</span><span data-lang="en">Mechanism gallery</span></h2>
+    <div class="gallery">
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span class="acc">Add()</span><i>→</i><span>排队</span><i>→</i><span>分块 Range</span><i>→</i><span>校验</span><i>→</i><span class="acc">完成</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">XGDL：任务入队到校验完成的流水线</span><span data-lang="en">XGDL: from enqueue to verified completion</span></figcaption>
+      </figure>
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span>写线程</span><i>→</i><span class="acc">环形队列</span><i>→</i><span>满则丢弃 + 计数</span><i>→</i><span>UiPoll</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">XGLOG：绝不阻塞写入方的日志链路</span><span data-lang="en">XGLOG: a logging path that never blocks writers</span></figcaption>
+      </figure>
+      <figure>
+        <div class="art">
+          <div class="flow">
+            <span>Load（宽松）</span><i>→</i><span class="acc">Value 树</span><i>→</i><span>点路径读写</span><i>→</i><span>原子 Save</span>
+          </div>
+        </div>
+        <figcaption><span data-lang="zh">XGCFG：解析、访问与落盘的闭环</span><span data-lang="en">XGCFG: parse, access and persist loop</span></figcaption>
+      </figure>
+    </div>
+
+    <h2 id="download"><span data-lang="zh">下载：把不确定性收进一个队列</span><span data-lang="en">Download: absorbing uncertainty into one queue</span></h2>
+    <p data-lang="zh">下载是本库中最重的一块。它把「大文件分块、小文件高并发、镜像回退、断点续传、校验重下、进度统计」压进一个管理器，调用方只看到入队、轮询和事件。</p>
+    <p data-lang="en">Download is the heaviest piece here. It folds chunked large files, highly concurrent small files, mirror fallback, resume, verify-and-restart and progress accounting into one manager; callers see only enqueue, poll and events.</p>
+
+    <div class="tabs">
+      <input type="radio" name="dl-tab" id="dl-a" checked>
+      <input type="radio" name="dl-tab" id="dl-b">
+      <div class="tab-bar"><label for="dl-a"><span data-lang="zh">调用侧</span><span data-lang="en">Caller side</span></label><label for="dl-b"><span data-lang="zh">精简版</span><span data-lang="en">Minimal</span></label></div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="xgdl (caller)">xgdl::Manager dl;                       // 线程数、分块大小、重试策略在 Config 里
+dl.Start();
+
+// expectBytes 传 0 表示大小未知；expectSha1 为空表示不校验
+uint32_t id = dl.Add(url, path, 0, sha1);
+
+// UI 每 200ms 拉一次快照，内部按调用间隔算速度
+xgdl::Progress p = dl.Snapshot();
+// p.bytesDone / p.bytesTotal / p.bytesPerSec / p.active / p.failed
+
+xgdl::Event ev;
+while (dl.PollEvent(ev)) {              // 非阻塞，队列空返回 false
+    if (ev.kind == xgdl::EventKind::Failed) Retry(ev.id);
+}
+dl.WaitIdle();                          // 测试与 CLI 用</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="scheduler (simplified)">if (task.size &lt; largeThreshold) {       // 小文件：整文件一条连接
+    fetchWhole(task);
+} else {                                 // 大文件：按 chunkSize 切 Range
+    for (auto chunk : Split(task, cfg.chunkSize)) {
+        queue(chunk, /*retry=*/cfg.maxRetries);
+    }
+}
+// 每个失败任务先换镜像再重试；校验不过则删文件、整任务重下</pre>
+        </div>
+      </div>
+    </div>
+
+    <p data-lang="zh">关键设计：接收缓冲是每任务一条环形缓冲，写满就暂停对应连接，避免慢磁盘把整个网络层拖死；分块与校验都在工作线程里完成，UI 线程只读快照。</p>
+    <p data-lang="en">Key design point: each task has a ring buffer; when it fills, that connection is paused so a slow disk cannot stall the whole network layer. Chunking and verification happen on worker threads, and the UI thread only reads snapshots.</p>
+
+    <h2 id="log"><span data-lang="zh">日志：满了就丢，但要记账</span><span data-lang="en">Logging: drop on overflow, but keep count</span></h2>
+    <p data-lang="zh">日志写线程不应该被 UI 拖慢，也不应该反过来阻塞业务。这里的策略是固定内存的环形队列：队列满时直接丢弃并累加计数，通过 <code>Dropped()</code> 暴露，而不是等待。</p>
+    <p data-lang="en">A log writer must not be slowed by the UI, nor block business code. The strategy is a fixed-memory ring queue: when full, entries are dropped and counted, exposed through <code>Dropped()</code>, instead of blocking.</p>
+
+<pre data-file="xglog (simplified)">bool Push(const Record&amp; r) {
+    if (!ring.TryPush(r)) {          // 队列满
+        dropped.fetch_add(1);        // 记账，不等待、不扩容
+        return false;
+    }
+    FlushSignal();                   // 唤醒写线程
+    return true;
+}
+
+// UI 侧：拉取增量，不注册回调
+xglog::Record rec;
+while (xglog::UiPoll(rec)) { ui.Append(rec); }</pre>
+
+    <p data-lang="zh">级别过滤发生在入队前，因此 Debug 级在发布版几乎不产生成本；Fatal 会强制同步刷盘，保证崩溃前最后几条一定落盘。</p>
+    <p data-lang="en">Level filtering happens before enqueue, so Debug costs almost nothing in release builds. Fatal forces a synchronous flush so the last lines before a crash are always written.</p>
+
+    <h2 id="cfg"><span data-lang="zh">配置：宽松解析与原子落盘</span><span data-lang="en">Config: lenient parsing and atomic persistence</span></h2>
+    <p data-lang="zh">配置文件是用户会手改的东西，所以解析必须宽松（允许注释、尾逗号），保存必须原子（写临时文件再替换），否则一次断电就会留下半个 JSON。</p>
+    <p data-lang="en">Config files get edited by hand, so parsing must be lenient (comments and trailing commas allowed) and saving must be atomic (write a temporary file, then replace), or a power cut leaves half a JSON file.</p>
+
+    <div class="tabs">
+      <input type="radio" name="cfg-tab" id="cfg-a" checked>
+      <input type="radio" name="cfg-tab" id="cfg-b">
+      <div class="tab-bar"><label for="cfg-a"><span data-lang="zh">读写</span><span data-lang="en">Read / write</span></label><label for="cfg-b"><span data-lang="zh">原子保存</span><span data-lang="en">Atomic save</span></label></div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="xgcfg (caller)">xgcfg::Config cfg;
+cfg.Load(L"global.json", &amp;err);          // 宽松解析：注释 / 尾逗号
+
+int64_t mem = cfg.GetInt("memoryMb", 4096);
+cfg.Set("javaHome", xgcfg::Value("C:/Program Files/Java/jdk-17"));  // 点路径写入
+cfg.Save(&amp;err);                            // 原子写；失败保留原文件
+
+if (cfg.Changed()) cfg.Reload();           // mtime + 大小，不读内容</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="save (simplified)">std::wstring tmp = path + L".tmp";
+WriteAll(tmp, Dump(root, pretty));   // 先写临时文件并 flush
+MoveFileEx(tmp, path, MOVEFILE_REPLACE_EXISTING);  // 再原子替换
+// 任何一步失败都保留旧文件</pre>
+        </div>
+      </div>
+    </div>
+
+    <p data-lang="zh"><code>Binder</code> 把结构体字段与点路径双向绑定：读取时从配置拉值到字段，写回时从字段推到配置，避免每个设置项都手写两行转换。</p>
+    <p data-lang="en"><code>Binder</code> binds struct fields to dot paths in both directions: fields are pulled from config on load and pushed back on save, so no setting needs hand-written conversion code.</p>
+
+    <h2 id="zip"><span data-lang="zh">压缩：先防守，再解压</span><span data-lang="en">Archives: defend, then extract</span></h2>
+    <p data-lang="zh">zip 解包默认不可信：条目名可能带 <code>..\</code> 跳出目标目录。这里在写盘前做路径规范化与穿越拒绝，并对每个条目校验 CRC 与长度。</p>
+    <p data-lang="en">A zip archive is untrusted by default: entry names may contain <code>..\</code> to escape the target directory. Paths are normalised and traversal rejected before writing, and each entry's CRC and size are verified.</p>
+
+<pre data-file="extract (simplified)">for (const Entry&amp; e : archive.Entries()) {
+    std::wstring out = Join(dest, e.name);
+    if (!IsInside(dest, out)) { err = "path traversal"; return false; }
+    if (!ExtractOne(e, out)) return false;     // inflate → CRC + size 校验
+}
+// 写入端：数据先写 .tmp，全部成功后再重命名提交</pre>
+
+    <h2 id="tradeoffs"><span data-lang="zh">取舍</span><span data-lang="en">Trade-offs</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">选择</span><span data-lang="en">Choice</span></th><th><span data-lang="zh">得到的</span><span data-lang="en">Gain</span></th><th><span data-lang="zh">代价</span><span data-lang="en">Cost</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">轮询而非回调</span><span data-lang="en">Polling over callbacks</span></td><td><span data-lang="zh">UI 不必处理跨线程回调与重入</span><span data-lang="en">No cross-thread callbacks or reentrancy in the UI</span></td><td><span data-lang="zh">调用方必须自己定时拉取</span><span data-lang="en">The caller must poll on its own schedule</span></td></tr>
+          <tr><td><span data-lang="zh"><code>bool + err</code></span><span data-lang="en"><code>bool + err</code></span></td><td><span data-lang="zh">错误路径显式，FFI 边界干净</span><span data-lang="en">Explicit error paths, clean FFI boundaries</span></td><td><span data-lang="zh">无法用 RAII 自动传播错误</span><span data-lang="en">No RAII-driven error propagation</span></td></tr>
+          <tr><td><span data-lang="zh">模块互不依赖</span><span data-lang="en">Independent modules</span></td><td><span data-lang="zh">可按需链接，体积可控</span><span data-lang="en">Link only what is needed; size stays controlled</span></td><td><span data-lang="zh">跨模块协作要调用方自己拼</span><span data-lang="en">Cross-module orchestration is left to the caller</span></td></tr>
+          <tr><td><span data-lang="zh">只用系统 API</span><span data-lang="en">System APIs only</span></td><td><span data-lang="zh">依赖面极小，许可干净</span><span data-lang="en">Tiny dependency surface, clean licensing</span></td><td><span data-lang="zh">Windows 专用，不能跨平台</span><span data-lang="en">Windows-only, not portable</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="development.html"><span data-lang="zh">开发：模块 API、目录结构与构建</span><span data-lang="en">Development: module APIs, layout and build</span></a></li>
+      <li><a href="../../projects/void-craft-launcher/reference.html"><span data-lang="zh">VCL 参考：这些模块如何被启动器使用</span><span data-lang="en">VCL reference: how the launcher uses these modules</span></a></li>
+      <li><a href="../../general/toolchain.html"><span data-lang="zh">通用：环境与工具链</span><span data-lang="en">General: environment and toolchain</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

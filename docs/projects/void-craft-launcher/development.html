@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="Void Craft Launcher · 开发" data-en="Void Craft Launcher · Development">Void Craft Launcher · 开发</title>
+<meta name="description" content="VCL 开发文档：技术栈、目录规划、核心接口、配置格式、构建与里程碑。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>Void Craft Launcher</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">开发</span><span data-lang="en">Development</span>
+    </p>
+
+    <h1><span data-lang="zh">开发</span><span data-lang="en">Development</span></h1>
+    <p class="sub" data-lang="zh">这一页描述 v0.2 的施工蓝图。<code>src/</code> 尚未落地，目录与接口来自架构文档，落地后以代码为准。</p>
+    <p class="sub" data-lang="en">This page describes the v0.2 blueprint. <code>src/</code> is not written yet; layout and interfaces come from the architecture document and code will take precedence once it exists.</p>
+
+    <h2 id="stack"><span data-lang="zh">技术栈</span><span data-lang="en">Stack</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">项目</span><span data-lang="en">Item</span></th><th><span data-lang="zh">值</span><span data-lang="en">Value</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">标准</span><span data-lang="en">Standard</span></td><td>C++17，<code>/utf-8 /W3</code>，<code>cxx_std_17</code></td></tr>
+          <tr><td><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></td><td>MSVC 2022 x64；源码 UTF-8 <strong>带 BOM</strong></td></tr>
+          <tr><td><span data-lang="zh">运行时</span><span data-lang="en">Runtime</span></td><td><code>/MD</code> 全工程统一，禁用 <code>/MT</code>；<code>VCUI_STATIC_RUNTIME=OFF</code></td></tr>
+          <tr><td><span data-lang="zh">构建</span><span data-lang="en">Build</span></td><td>CMake ≥ 3.20，顶层工程 + <code>add_subdirectory</code></td></tr>
+          <tr><td><span data-lang="zh">UI 目标</span><span data-lang="en">UI target</span></td><td><code>VCUI::vcui</code>（<code>third_party/VCUI</code>）</td></tr>
+          <tr><td><span data-lang="zh">基础库目标</span><span data-lang="en">Foundation targets</span></td><td><code>XGLOG::xglog</code>、<code>XGFS::xgfs</code>、<code>XGCFG::xgcfg</code>、<code>XGDL::xgdl</code>、<code>XGZIP::xgzip</code>、<code>XGCRYPTO::xgcrypto</code>、<code>XGPROC::xgproc</code>、<code>XGNET::xgnet</code>、<code>XGTHREAD::xgthread</code>、<code>XGSHELL::xgshell</code>、<code>XGCRASH::xgcrash</code>（<code>third_party/cpploclib</code>）</td></tr>
+          <tr><td><span data-lang="zh">启动内核</span><span data-lang="en">Launch core</span></td><td>LightyLauncherLib：Rust <code>staticlib</code> → <code>lighty.lib</code> + <code>lighty.h</code>（cbindgen）</td></tr>
+          <tr><td><span data-lang="zh">包管理</span><span data-lang="en">Packages</span></td><td>顶层 <code>vcpkg.json</code>（至少 <code>curl</code>）</td></tr>
+          <tr><td><span data-lang="zh">许可</span><span data-lang="en">License</span></td><td>AGPL-3.0，每文件 SPDX 头；内置依赖保留 Apache-2.0 头</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="layout"><span data-lang="zh">目录结构（规划）</span><span data-lang="en">Layout (planned)</span></h2>
+    <div class="tree-box">
+<pre data-file="Void-Craft-Launcher--VCL/">Void-Craft-Launcher--VCL/
+├─ CMakeLists.txt               # add_subdirectory(third_party/*)，FORCE 关 demo/test
+├─ vcpkg.json
+├─ third_party/
+│  ├─ VCUI/                     # 上游目录结构原样保留
+│  └─ cpploclib/
+├─ src/
+│  ├─ main.cpp
+│  ├─ app/
+│  │  ├─ App.h/.cpp             # 窗口与生命周期（VCUI Surface / App）
+│  │  ├─ Router.h/.cpp          # 页面栈与切换
+│  │  └─ State.h/.cpp           # AppState + Intent 分发（唯一可写状态）
+│  ├─ ui/
+│  │  ├─ shell/                 # 标题栏、侧边导航、内容容器、状态栏
+│  │  ├─ pages/                 # 各页面（清单待定）
+│  │  └─ widgets/               # 实例卡片、任务行、设置项
+│  ├─ backend/
+│  │  ├─ IBackend.h             # 四个能力
+│  │  ├─ MockBackend.cpp        # 界面阶段假数据
+│  │  └─ lighty/                # Lighty C ABI 封装
+│  └─ core/
+│     ├─ root_manager/
+│     ├─ version_scanner/
+│     ├─ instance_store/
+│     ├─ meta_cache/
+│     └─ log_hub/
+├─ docs/
+│  ├─ ARCHITECTURE.md
+│  └─ THIRD_PARTY.md
+└─ tools/                       # Lighty 静态库取用 / 校验脚本</pre>
+    </div>
+    <p data-lang="zh">命名空间统一 <code>vcl</code>，目录小写下划线，头文件一律 <code>#pragma once</code>；对外路径参数用 UTF-8 <code>std::string</code>，只在 Win32 与 Lighty 边界转宽字符。</p>
+    <p data-lang="en">Namespaces are uniformly <code>vcl</code>, directories lower_snake_case, headers always <code>#pragma once</code>; path parameters are UTF-8 <code>std::string</code>, widened only at Win32 and Lighty boundaries.</p>
+
+    <h2 id="core"><span data-lang="zh">核心接口</span><span data-lang="en">Core APIs</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">组件</span><span data-lang="en">Component</span></th><th><span data-lang="zh">职责</span><span data-lang="en">Responsibility</span></th><th><span data-lang="zh">关键接口</span><span data-lang="en">Key API</span></th></tr></thead>
+        <tbody>
+          <tr><td><code>core::RootManager</code></td><td><span data-lang="zh">读写 <code>global.json</code>，维护 Root 列表</span><span data-lang="en">Reads/writes <code>global.json</code>, maintains the Root list</span></td><td><code>Load</code> / <code>Save</code> / <code>Roots</code> / <code>AddRoot</code> / <code>RemoveRoot</code> / <code>CurrentIndex</code> / <code>SetCurrent</code></td></tr>
+          <tr><td><code>core::VersionScanner</code></td><td><span data-lang="zh">扫描 <code>versions\*\*.json</code> 头部，探 loader</span><span data-lang="en">Scans <code>versions\*\*.json</code> headers and detects loaders</span></td><td><code>Scan(rootDir)</code> → <code>VersionEntry</code></td></tr>
+          <tr><td><code>core::InstanceStore</code></td><td><span data-lang="zh">读写 <code>.vcl\instance.json</code>，缺失即生成默认</span><span data-lang="en">Reads/writes <code>.vcl\instance.json</code>, generating defaults when missing</span></td><td><span data-lang="zh">读取 / 保存 / 启发式 gameDir</span><span data-lang="en">Load / Save / heuristic gameDir</span></td></tr>
+          <tr><td><code>core::MetaCache</code></td><td><span data-lang="zh"><code>cache\meta</code> 小 JSON 缓存，FNV-1a key + TTL</span><span data-lang="en">Small JSON cache in <code>cache\meta</code>, FNV-1a key plus TTL</span></td><td><span data-lang="zh">取 / 存 / 失效</span><span data-lang="en">Get / Put / invalidate</span></td></tr>
+          <tr><td><code>core::LogHub</code></td><td><span data-lang="zh">XGLOG 薄封装，每实例一份日志</span><span data-lang="en">Thin XGLOG wrapper, one log file per instance</span></td><td><code>UiPoll</code><span data-lang="zh"> 供日志面板拉取</span><span data-lang="en"> for the log panel</span></td></tr>
+          <tr><td><code>backend::IBackend</code></td><td><span data-lang="zh">列表 / 安装 / 启动 / 探测 Java</span><span data-lang="en">List / install / launch / find Java</span></td><td><code>ListVersions</code> / <code>Install</code> / <code>Launch</code> / <code>FindJava</code></td></tr>
+          <tr><td><code>app::State</code></td><td><span data-lang="zh">唯一可写状态与 Intent 分发</span><span data-lang="en">The only writable state, plus Intent dispatch</span></td><td><code>AppState</code> / <code>Intent</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="config"><span data-lang="zh">配置格式</span><span data-lang="en">Config formats</span></h2>
+    <div class="tabs">
+      <input type="radio" name="vc-tab" id="vc-a" checked>
+      <input type="radio" name="vc-tab" id="vc-b">
+      <div class="tab-bar"><label for="vc-a"><code>global.json</code></label><label for="vc-b"><code>instance.json</code></label></div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="%APPDATA%\XGStudio\VoidCraftLauncher\global.json">{
+  "version": 1,
+  "roots": [ { "path": "D:\\Games\\MC-1.20", "name": "主目录" } ],
+  "currentRoot": 0,
+  "ui": { "language": "zh-CN", "theme": "auto", "opacity": 0.9, "accent": "#0071EA" },
+  "download": { "mirror": "mojang", "concurrency": 16 },
+  "java": { "autoDetect": true, "preferredPath": "" }
+}</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="versions\&lt;folder&gt;\.vcl\instance.json">{
+  "version": 1,
+  "name": "1.20.4 Fabric",
+  "javaPath": "",
+  "memoryMb": 4096,
+  "jvmArgs": ["-XX:+UseG1GC"],
+  "gameDirMode": "VersionDir",
+  "customGameDir": "",
+  "loader": { "type": "fabric", "loaderVersion": "0.15.11", "installerVersion": "" },
+  "createdAt": 1730000000,
+  "lastPlayedAt": 1730000000,
+  "totalPlayTimeSec": 0,
+  "notes": ""
+}</pre>
+        </div>
+      </div>
+    </div>
+    <p data-lang="zh">没有 Root 级默认值继承：每个实例一份配置，缺失时按全默认 + 启发式 gameDir 即时生成，不阻断启动。</p>
+    <p data-lang="en">There is no Root-level default inheritance: each instance owns its config, and when missing it is generated on the fly from defaults plus the heuristic gameDir, without blocking launch.</p>
+
+    <h2 id="build"><span data-lang="zh">构建与依赖</span><span data-lang="en">Build and dependencies</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>依赖以源码副本内置</strong>，不用 submodule、不用 <code>find_package</code>；同步方式是整目录覆盖上游，再按 <code>docs/THIRD_PARTY.md</code> 重打本地补丁。</li>
+      <li data-lang="en"><strong>Dependencies are vendored as source copies</strong>, not submodules and not <code>find_package</code>; syncing means overwriting the whole upstream directory, then reapplying local patches listed in <code>docs/THIRD_PARTY.md</code>.</li>
+      <li data-lang="zh">顶层用 <code>CACHE BOOL "" FORCE</code> 关掉 <code>VCUI_BUILD_DEMO</code>、<code>CPPLOCLIB_BUILD_DEMOS</code>、<code>CPPLOCLIB_BUILD_TESTS</code>。</li>
+      <li data-lang="en">The top level forces off <code>VCUI_BUILD_DEMO</code>, <code>CPPLOCLIB_BUILD_DEMOS</code> and <code>CPPLOCLIB_BUILD_TESTS</code> via <code>CACHE BOOL "" FORCE</code>.</li>
+      <li data-lang="zh">Lighty 只以预编译静态库参与链接：CI 或本地 <code>cargo build --release</code> 产出，版本固定 git rev / tag，并记录 SHA-256；不在业务工程里跑 cargo。</li>
+      <li data-lang="en">Lighty participates only as a prebuilt static library: produced by CI or a local <code>cargo build --release</code>, pinned to a git rev/tag with a recorded SHA-256; cargo never runs inside the app build.</li>
+      <li data-lang="zh">新增依赖必须先写进 <code>THIRD_PARTY.md</code>，否则 PR 不接收。</li>
+      <li data-lang="en">Any new dependency must be recorded in <code>THIRD_PARTY.md</code> first; otherwise the PR is rejected.</li>
+    </ul>
+
+<pre data-file="build (planned)">cmake -B build -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+  -DVCPKG_TARGET_TRIPLET=x64-windows
+cmake --build build --config Release</pre>
+
+    <h2 id="conventions"><span data-lang="zh">编码规范</span><span data-lang="en">Conventions</span></h2>
+    <ul>
+      <li data-lang="zh">源码 UTF-8 带 BOM：外部 MSVC 未加 <code>/utf-8</code> 时会按 936 解析而报错。</li>
+      <li data-lang="en">Sources are UTF-8 with BOM: an external MSVC without <code>/utf-8</code> would parse them as codepage 936 and break.</li>
+      <li data-lang="zh">错误传递用 <code>bool + std::string&amp; err</code>，异常不穿越模块边界。</li>
+      <li data-lang="en">Errors travel as <code>bool + std::string&amp; err</code>; exceptions never cross module boundaries.</li>
+      <li data-lang="zh">UI 层禁止直接调用 <code>core</code> / <code>backend</code> 的写接口，只能发 Intent。</li>
+      <li data-lang="en">The UI layer must not call write APIs of <code>core</code> / <code>backend</code> directly; it only dispatches Intents.</li>
+      <li data-lang="zh">每个文件带 AGPL-3.0 头与 SPDX 标识；内置依赖保留其 Apache-2.0 头，不修改。</li>
+      <li data-lang="en">Every file carries an AGPL-3.0 header with an SPDX identifier; vendored dependencies keep their Apache-2.0 headers untouched.</li>
+    </ul>
+
+    <h2 id="milestones"><span data-lang="zh">里程碑</span><span data-lang="en">Milestones</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">版本</span><span data-lang="en">Version</span></th><th><span data-lang="zh">内容</span><span data-lang="en">Content</span></th></tr></thead>
+        <tbody>
+          <tr><td><b>v0.1</b></td><td><span data-lang="zh">UI 骨架：Shell、路由、AppState、MockBackend；core 三个组件可命令行跑通</span><span data-lang="en">UI skeleton: shell, router, AppState, MockBackend; three core components run from the command line</span></td></tr>
+          <tr><td>v0.2</td><td><span data-lang="zh">Lighty 接入：原版安装 + 启动 + 离线身份 + 每实例日志（替换 Mock）</span><span data-lang="en">Lighty integration: vanilla install, launch, offline identity, per-instance logs (replacing Mock)</span></td></tr>
+          <tr><td>v0.3</td><td><span data-lang="zh">loader 安装：Fabric / Quilt / Forge / NeoForge，经 Lighty</span><span data-lang="en">Loader installs: Fabric / Quilt / Forge / NeoForge via Lighty</span></td></tr>
+          <tr><td>v0.4</td><td><span data-lang="zh">多 Root 管理、设置页、下载页真实化</span><span data-lang="en">Multi-root management, settings page, real download page</span></td></tr>
+          <tr><td>v0.5</td><td><span data-lang="zh">微软登录</span><span data-lang="en">Microsoft sign-in</span></td></tr>
+          <tr><td>v0.6</td><td><span data-lang="zh">崩溃日志包、更新检查、Modrinth</span><span data-lang="en">Crash bundles, update checks, Modrinth</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="status"><span data-lang="zh">当前状态与边界</span><span data-lang="en">Status and limits</span></h2>
+    <ul>
+      <li data-lang="zh"><code>src/</code> 为空，v0.1 的工程与依赖清单尚未执行；本页目录与接口是蓝图。</li>
+      <li data-lang="en"><code>src/</code> is empty and the v0.1 scaffolding checklist is still open; the layout and APIs here are the blueprint.</li>
+      <li data-lang="zh">接入 Lighty 前有六项待验证：最小安装/启动入口、Java 探测归属、离线 UUID 派生、Root 写入范围、退出码透出、<code>/MD</code> 下的体积与符号冲突。</li>
+      <li data-lang="en">Six items must be validated before Lighty integration: minimal install/launch entry points, who owns Java detection, offline UUID derivation, the write scope inside a Root, exit-code transparency, and size/symbol conflicts under <code>/MD</code>.</li>
+      <li data-lang="zh">页面清单未定，v0.1 只做容器与占位页；不承诺与 PCL 的功能对等。</li>
+      <li data-lang="en">The page list is undecided and v0.1 ships containers and placeholders only; feature parity with PCL is not promised.</li>
+    </ul>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="index.html"><span data-lang="zh">说明：定位与界面</span><span data-lang="en">Overview: positioning and interface</span></a></li>
+      <li><a href="reference.html"><span data-lang="zh">参考：启动流程与后端切换</span><span data-lang="en">Reference: launch flow and backend swap</span></a></li>
+      <li><a href="../../general/licensing.html"><span data-lang="zh">通用：AGPL 与内置依赖的许可关系</span><span data-lang="en">General: AGPL and vendored dependency licensing</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

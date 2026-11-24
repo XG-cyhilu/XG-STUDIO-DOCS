@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-UI · 参考" data-en="XGStudio-cpp-UI · Reference">XGStudio-cpp-UI · 参考</title>
+<meta name="description" content="XGStudio-cpp-UI 参考：界面画廊、主题派生、离屏层渲染、输入法与焦点环的核心逻辑。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-UI</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">参考</span><span data-lang="en">Reference</span>
+    </p>
+
+    <h1><span data-lang="zh">参考</span><span data-lang="en">Reference</span></h1>
+    <p class="sub" data-lang="zh">界面画廊，以及维持这套视觉的三段核心逻辑：主题派生、离屏层渲染、输入法与焦点环。</p>
+    <p class="sub" data-lang="en">An interface gallery plus the three pieces of logic that hold the visuals together: theme derivation, off-screen rendering, IME and focus rings.</p>
+
+    <div class="note">
+      <p data-lang="zh">下列代码为<strong>机制示意</strong>，为可读性做了精简，不是仓库源码的逐行原样；完整实现见源码仓库。</p>
+      <p data-lang="en">The snippets below are <strong>illustrative simplifications</strong>, not verbatim source; see the repository for the complete implementation.</p>
+    </div>
+
+    <h2 id="gallery"><span data-lang="zh">界面画廊</span><span data-lang="en">Gallery</span></h2>
+    <div class="gallery">
+      <figure>
+        <a href="../../assets/img/vcui-light.png" target="_blank" rel="noopener"><img src="../../assets/img/vcui-light.png" alt="Light theme controls" loading="lazy"></a>
+        <figcaption><span data-lang="zh">浅色主题：输入框、滑块、分段选择、复选框</span><span data-lang="en">Light theme: inputs, slider, segmented control, checkbox</span></figcaption>
+      </figure>
+      <figure>
+        <a href="../../assets/img/vcui-dark.png" target="_blank" rel="noopener"><img src="../../assets/img/vcui-dark.png" alt="Dark theme controls" loading="lazy"></a>
+        <figcaption><span data-lang="zh">深色主题：同一组控件的对等呈现</span><span data-lang="en">Dark theme: the same control set, rendered as a peer</span></figcaption>
+      </figure>
+      <figure>
+        <a href="../../assets/img/vcui-controls.png" target="_blank" rel="noopener"><img src="../../assets/img/vcui-controls.png" alt="Control showcase" loading="lazy"></a>
+        <figcaption><span data-lang="zh">控件总览：17 个控件共用同一套度量</span><span data-lang="en">Control showcase: 17 controls sharing one metric set</span></figcaption>
+      </figure>
+    </div>
+
+    <h2 id="theme"><span data-lang="zh">主题如何派生</span><span data-lang="en">How the theme is derived</span></h2>
+    <p data-lang="zh">只有四个基础色（卡面、页面底色、悬停填充、主文字）来自色板，其余全部由强调色和明暗算出来。这样换一个强调色，整棵控件树的悬停、按下、选中、描边都会一起变。</p>
+    <p data-lang="en">Only four base colours (surface, page background, hover fill, primary text) come from the palette; everything else is computed from the accent colour and mode. Change one accent and hover, press, selection and border states across the whole tree follow.</p>
+
+<pre data-file="Theme.h (simplified)">Tokens Derive(Tokens t, D2D1_COLOR_F accent) {
+    t.accent      = accent;
+    t.accentHover = Lighten(accent, .08f);     // 提亮 8%
+    t.accentPress = Darken(accent,  .10f);     // 压暗 10%
+    t.accentSoft  = A(accent, .12f);           // 选中导航、徽章底
+    t.accentSel   = A(accent, .18f);           // 列表行选中底
+    t.onAccent    = OnColor(accent);           // 按亮度取黑 / 白
+
+    t.text2  = Mix(t.wz, t.bj, .45f);          // 次级文字
+    t.text3  = Mix(t.wz, t.bj, .65f);          // 三级 / 禁用文字
+    t.border = Mix(t.wz, t.kp, .84f);          // 控件描边
+    return t;
+}</pre>
+
+    <p data-lang="zh">排版同理：字号不是一个数字，而是 type ramp 的一档，每档自带字号、字重和<strong>绝对行高</strong>。因此 32px 标题的行高是 40，而不是 1.55 倍。</p>
+    <p data-lang="en">Typography works the same way: a size is a type-ramp entry carrying font size, weight and an <strong>absolute</strong> line height. A 32 px title therefore uses a 40 px line height, not 1.55×.</p>
+
+    <h2 id="render"><span data-lang="zh">离屏层渲染</span><span data-lang="en">Off-screen rendering</span></h2>
+    <p data-lang="zh">所有绘制先落在持久离屏层上，每帧只把整层贴一次到窗口；动画只重绘标脏的控件矩形（含阴影余量），滚动只重绘滚动容器。</p>
+    <p data-lang="en">All painting lands on a persistent off-screen layer that is blitted to the window once per frame; animations repaint only dirty control rectangles (with shadow margin), and scrolling repaints only the scroll container.</p>
+
+    <div class="tabs">
+      <input type="radio" name="render-tab" id="render-a" checked>
+      <input type="radio" name="render-tab" id="render-b">
+      <div class="tab-bar"><label for="render-a"><span data-lang="zh">机制</span><span data-lang="en">Mechanism</span></label><label for="render-b"><span data-lang="zh">精简版</span><span data-lang="en">Minimal</span></label></div>
+      <div class="tab-panels">
+        <div class="tab-panel">
+<pre data-file="Surface.cpp (simplified)">// 有动画时：推进状态 → 只让脏区域进入重绘
+void Surface::Tick(float dt) {
+    animating_ = root_ ? root_->Update(dt) : false;
+    if (animating_) UpdateWindow(hwnd_);
+}
+
+// 绘制：整棵树画进离屏层，最后一次性贴到窗口
+void Surface::Paint() {
+    g_.Clear(theme_.t.bj);          // 页面底色
+    root_->Arrange(clientRect_);    // 先布局
+    root_->Paint(ctx);              // 全部画进 layer
+    g_.Present();                   // layer → hwnd，一次贴图
+}</pre>
+        </div>
+        <div class="tab-panel">
+<pre data-file="frame loop">while (animating) {
+    root->Update(dt);               // 动画读数（悬停 / 按压 / 入场）
+    InvalidateDirtyRect(28.f);      // 脏矩形，留 28px 阴影余量
+    UpdateWindow(hwnd);
+    DwmFlush();                     // 与桌面合成节拍对齐
+}
+// 没有动画时挂起在 GetMessage，CPU 归零</pre>
+        </div>
+      </div>
+    </div>
+
+    <p data-lang="zh">由于绘制目标是 <code>ID2D1BitmapRenderTarget</code>，库不需要 D3D11 设备、<code>ID2D1Effect</code>、Acrylic 或 Mica；阴影用四层缩放的圆角位图叠加并缓存，代价是它不是真正的高斯模糊。</p>
+    <p data-lang="en">Because the target is an <code>ID2D1BitmapRenderTarget</code>, the library needs no D3D11 device, <code>ID2D1Effect</code>, Acrylic or Mica. Shadows are four scaled rounded bitmaps with caching — the trade-off is that they are not true Gaussian blur.</p>
+
+    <h2 id="ime"><span data-lang="zh">输入法：把组合串放对位置</span><span data-lang="en">IME: putting composition in place</span></h2>
+    <p data-lang="zh">自绘文本框最容易做残的地方是输入法。这里的做法是接管组合消息，把组合串按光标位置布局，并把系统候选窗锚到光标附近。</p>
+    <p data-lang="en">IME is where self-drawn text boxes most often break. The approach here is to take over composition messages, lay out the composition string at the caret, and anchor the system candidate window next to it.</p>
+
+<pre data-file="Input.cpp (simplified)">case WM_IME_STARTCOMPOSITION: {
+    CANDIDATEFORM cf{};
+    cf.dwIndex = 0;
+    cf.dwStyle = CFS_CANDIDATEPOS;
+    cf.ptCurrentPos = CaretPoint();      // 客户区坐标
+    ImmSetCandidateWindow(himc, &cf);
+    break;
+}
+case WM_IME_COMPOSITION:
+    if (lparam & GCS_COMPSTR) {
+        composition = ReadComposition(himc);   // 控件内带下划线渲染
+        COMPOSITIONFORM form{};
+        form.dwStyle = CFS_POINT;
+        form.ptCurrentPos = CaretPoint();
+        ImmSetCompositionWindow(himc, &form);
+        Invalidate();
+    }
+    break;</pre>
+
+    <p data-lang="zh">组合串推进时光标跟着走，提交后清空组合态；焦点离开输入框时结束组合，避免候选窗残留在屏幕上。</p>
+    <p data-lang="en">The caret advances with the composition string and the composition state clears on commit; leaving the field ends composition so no candidate window is left behind.</p>
+
+    <h2 id="focus"><span data-lang="zh">焦点环为什么只在键盘时出现</span><span data-lang="en">Why the focus ring is keyboard-only</span></h2>
+    <p data-lang="zh">焦点环在整棵树绘制完成之后叠加，并夹到最近的裁剪容器内；只有键盘操作才进入“键盘焦点模式”，鼠标点击产生的焦点能收键盘事件但不画环。</p>
+    <p data-lang="en">The focus ring is painted after the tree, clipped to the nearest clipping container. Only keyboard interaction enters keyboard-focus mode: pointer-acquired focus still receives key events but draws no ring.</p>
+
+<pre data-file="Focus.cpp (simplified)">void PaintFocusRing(Gfx& g, Widget* w, const Tokens& t) {
+    D2D1_RECT_F rc = Inflate(w->Frame(), 2.f);   // 框外扩 2px
+    g.PushClip(NearestClipAncestor(w));          // 不画到滚动容器之外
+    g.StrokeRect(rc, 4.f, t.accent, 2.f);        // 2px 强调色描边
+    g.PopClip();
+}
+// Tab / Shift+Tab 按树序在 Focusable() 控件间移动；
+// 焦点落到视口外时，最近的 ScrollView 自动把它滚进来。</pre>
+
+    <h2 id="tradeoffs"><span data-lang="zh">取舍</span><span data-lang="en">Trade-offs</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">选择</span><span data-lang="en">Choice</span></th>
+          <th><span data-lang="zh">得到的</span><span data-lang="en">Gain</span></th>
+          <th><span data-lang="zh">代价</span><span data-lang="en">Cost</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">全自绘</span><span data-lang="en">Fully self-drawn</span></td><td><span data-lang="zh">视觉与系统主题解耦，跨版本稳定</span><span data-lang="en">Visuals decoupled from system themes and stable across versions</span></td><td><span data-lang="zh">每个控件的命中、焦点、输入法都要自己实现</span><span data-lang="en">Hit testing, focus and IME must be implemented per control</span></td></tr>
+          <tr><td><span data-lang="zh">只用 D2D 1.0</span><span data-lang="en">Direct2D 1.0 only</span></td><td><span data-lang="zh">硬件要求低，可回退 WARP</span><span data-lang="en">Low hardware requirements, WARP fallback</span></td><td><span data-lang="zh">没有 Effect 链、真高斯与 Acrylic</span><span data-lang="en">No effect graph, true blur or Acrylic</span></td></tr>
+          <tr><td><span data-lang="zh">空闲挂起</span><span data-lang="en">Idle suspension</span></td><td><span data-lang="zh">静止时 CPU 0%</span><span data-lang="en">0% CPU at rest</span></td><td><span data-lang="zh">动画必须显式唤醒帧循环</span><span data-lang="en">Animation must explicitly wake the frame loop</span></td></tr>
+          <tr><td><span data-lang="zh">单一度量 + Token</span><span data-lang="en">Single metrics + tokens</span></td><td><span data-lang="zh">换皮不改控件代码</span><span data-lang="en">Re-theming without touching controls</span></td><td><span data-lang="zh">视觉自由度受 Fluent 2 约束</span><span data-lang="en">Visual freedom bounded by Fluent 2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="development.html"><span data-lang="zh">开发：公开 API、头文件职责与构建</span><span data-lang="en">Development: public API, headers and build</span></a></li>
+      <li><a href="index.html"><span data-lang="zh">说明：项目定位与技术栈</span><span data-lang="en">Overview: positioning and stack</span></a></li>
+      <li><a href="../../general/design.html"><span data-lang="zh">通用：设计与视觉规范</span><span data-lang="en">General: design and visual system</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

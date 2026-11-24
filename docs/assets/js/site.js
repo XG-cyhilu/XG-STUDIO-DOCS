@@ -1,4 +1,4 @@
-/* XG STUDIO Documentation — shell, i18n and theme */
+/* XG STUDIO Documentation — shell, tree navigation, i18n, theme, on-page TOC */
 (function () {
   'use strict';
 
@@ -15,9 +15,33 @@
     {
       group: { zh: '项目文档', en: 'Projects' },
       items: [
-        { href: 'projects/xgstudio-cpp-ui.html', zh: 'XGStudio-cpp-UI', en: 'XGStudio-cpp-UI' },
-        { href: 'projects/xgstudio-cpp-core.html', zh: 'XGStudio-cpp-Core', en: 'XGStudio-cpp-Core' },
-        { href: 'projects/void-craft-launcher.html', zh: 'Void Craft Launcher', en: 'Void Craft Launcher' }
+        {
+          href: 'projects/xgstudio-cpp-ui/index.html',
+          zh: 'XGStudio-cpp-UI', en: 'XGStudio-cpp-UI',
+          children: [
+            { href: 'projects/xgstudio-cpp-ui/index.html', zh: '说明', en: 'Overview' },
+            { href: 'projects/xgstudio-cpp-ui/reference.html', zh: '参考', en: 'Reference' },
+            { href: 'projects/xgstudio-cpp-ui/development.html', zh: '开发', en: 'Development' }
+          ]
+        },
+        {
+          href: 'projects/xgstudio-cpp-core/index.html',
+          zh: 'XGStudio-cpp-Core', en: 'XGStudio-cpp-Core',
+          children: [
+            { href: 'projects/xgstudio-cpp-core/index.html', zh: '说明', en: 'Overview' },
+            { href: 'projects/xgstudio-cpp-core/reference.html', zh: '参考', en: 'Reference' },
+            { href: 'projects/xgstudio-cpp-core/development.html', zh: '开发', en: 'Development' }
+          ]
+        },
+        {
+          href: 'projects/void-craft-launcher/index.html',
+          zh: 'Void Craft Launcher', en: 'Void Craft Launcher',
+          children: [
+            { href: 'projects/void-craft-launcher/index.html', zh: '说明', en: 'Overview' },
+            { href: 'projects/void-craft-launcher/reference.html', zh: '参考', en: 'Reference' },
+            { href: 'projects/void-craft-launcher/development.html', zh: '开发', en: 'Development' }
+          ]
+        }
       ]
     },
     {
@@ -50,13 +74,12 @@
     theme: { zh: '切换深色 / 浅色主题', en: 'Toggle dark / light theme' },
     copy: { zh: '复制', en: 'Copy' },
     copied: { zh: '已复制', en: 'Copied' },
-    github: { zh: 'GitHub', en: 'GitHub' }
+    github: { zh: 'GitHub', en: 'GitHub' },
+    onthispage: { zh: '本页内容', en: 'On this page' },
+    backtop: { zh: '返回顶部', en: 'Back to top' }
   };
 
-  var state = {
-    lang: 'zh',
-    theme: 'light'
-  };
+  var state = { lang: 'zh', theme: 'light' };
 
   try {
     var savedLang = localStorage.getItem('xgdocs-lang');
@@ -64,19 +87,21 @@
     state.lang = (qs === 'en' || qs === 'zh') ? qs : (savedLang === 'en' ? 'en' : 'zh');
     var savedTheme = localStorage.getItem('xgdocs-theme');
     state.theme = savedTheme === 'dark' ? 'dark' : 'light';
-    if (!savedLang && !qs && new URLSearchParams(location.search).get('theme') === 'dark') {
-      state.theme = 'dark';
-    }
   } catch (e) {}
 
-  function L(obj) {
-    return state.lang === 'en' ? (obj.en || obj.zh) : obj.zh;
-  }
+  function L(obj) { return state.lang === 'en' ? (obj.en || obj.zh) : obj.zh; }
 
   function pages() {
-    return NAV.filter(function (g) { return g.group.zh !== '资源'; })
-      .reduce(function (acc, g) { return acc.concat(g.items); }, [])
-      .filter(function (i) { return !i.external; });
+    var out = [];
+    NAV.forEach(function (g) {
+      if (g.group.zh === '资源') return;
+      g.items.forEach(function (it) {
+        if (it.external) return;
+        out.push(it);
+        (it.children || []).forEach(function (c) { out.push(c); });
+      });
+    });
+    return out;
   }
 
   function currentPath() {
@@ -92,9 +117,7 @@
     return ROOT + '/' + href;
   }
 
-  function isActive(href) {
-    return currentPath() === href;
-  }
+  function isActive(href) { return currentPath() === href; }
 
   /* ---------------- header ---------------- */
   function renderHeader() {
@@ -109,7 +132,7 @@
         '</a>' +
         '<nav class="header-nav" aria-label="' + L({ zh: '主导航', en: 'Main navigation' }) + '">' +
           '<a href="' + hrefFor('index.html') + '">' + L(LABELS.home) + '</a>' +
-          '<a href="' + hrefFor('projects/xgstudio-cpp-ui.html') + '">' + L(LABELS.projects) + '</a>' +
+          '<a href="' + hrefFor('projects/xgstudio-cpp-ui/index.html') + '">' + L(LABELS.projects) + '</a>' +
           '<a href="' + hrefFor('general/quick-start.html') + '">' + L(LABELS.general) + '</a>' +
           '<a href="' + hrefFor('general/licensing.html') + '">' + L(LABELS.licenses) + '</a>' +
         '</nav>' +
@@ -134,15 +157,15 @@
       '</div>' +
       '<noscript><div style="padding:10px 24px;font-size:13px;background:var(--surface);border-top:1px solid var(--line)">' +
         '<a href="' + hrefFor('index.html') + '">Home</a> · ' +
-        '<a href="' + hrefFor('projects/xgstudio-cpp-ui.html') + '">XGStudio-cpp-UI</a> · ' +
-        '<a href="' + hrefFor('projects/xgstudio-cpp-core.html') + '">XGStudio-cpp-Core</a> · ' +
-        '<a href="' + hrefFor('projects/void-craft-launcher.html') + '">Void Craft Launcher</a> · ' +
+        '<a href="' + hrefFor('projects/xgstudio-cpp-ui/index.html') + '">XGStudio-cpp-UI</a> · ' +
+        '<a href="' + hrefFor('projects/xgstudio-cpp-core/index.html') + '">XGStudio-cpp-Core</a> · ' +
+        '<a href="' + hrefFor('projects/void-craft-launcher/index.html') + '">Void Craft Launcher</a> · ' +
         '<a href="' + hrefFor('general/quick-start.html') + '">Quick Start</a> · ' +
         '<a href="' + hrefFor('general/licensing.html') + '">Licenses</a>' +
       '</div></noscript>';
   }
 
-  /* ---------------- sidebar ---------------- */
+  /* ---------------- sidebar tree ---------------- */
   function renderSidebar() {
     var el = document.getElementById('site-sidebar');
     if (!el) return;
@@ -150,13 +173,70 @@
     NAV.forEach(function (g) {
       html += '<div class="side-group"><p class="side-title">' + L(g.group) + '</p>';
       g.items.forEach(function (it) {
-        var cls = 'side-link' + (it.external ? ' ext' : '');
-        var attrs = it.external ? ' target="_blank" rel="noopener"' : (isActive(it.href) ? ' aria-current="page"' : '');
-        html += '<a class="' + cls + '" href="' + hrefFor(it.href) + '"' + attrs + '>' + L(it) + '</a>';
+        var kids = it.children || [];
+        var branchActive = kids.some(function (c) { return isActive(c.href); });
+        var cls = 'side-link' + (it.external ? ' ext' : '') + (kids.length ? ' side-branch' : '');
+        var attrs = it.external
+          ? ' target="_blank" rel="noopener"'
+          : (isActive(it.href) ? ' aria-current="page"' : '');
+        html += '<a class="' + cls + '" href="' + hrefFor(it.href) + '"' + attrs + '>' +
+          L(it) + '</a>';
+        if (kids.length) {
+          html += '<div class="side-sub">';
+          kids.forEach(function (c) {
+            html += '<a class="side-link" href="' + hrefFor(c.href) + '"' +
+              (isActive(c.href) ? ' aria-current="page"' : '') + '>' + L(c) + '</a>';
+          });
+          html += '</div>';
+        }
       });
       html += '</div>';
     });
     el.innerHTML = html;
+  }
+
+  /* ---------------- on-page TOC ---------------- */
+  function headingText(h) {
+    var spans = h.querySelectorAll('[data-lang]');
+    if (!spans.length) return h.textContent.replace(/\s+/g, ' ').trim();
+    var pick = h.querySelector('[data-lang="' + state.lang + '"]');
+    var text = pick ? pick.textContent : h.textContent;
+    return text.replace(/\s+/g, ' ').trim();
+  }
+
+  function buildToc() {
+    var toc = document.getElementById('page-toc');
+    if (!toc) return;
+    var main = document.getElementById('main');
+    var heads = main ? main.querySelectorAll('h2[id], h3[id]') : [];
+    if (!heads.length) { toc.innerHTML = ''; return; }
+
+    var html = '<p class="toc-title">' + L(LABELS.onthispage) + '</p>';
+    Array.prototype.forEach.call(heads, function (h) {
+      html += '<a class="lvl' + h.tagName.slice(1) + '" href="#' + h.id + '">' + headingText(h) + '</a>';
+    });
+    html += '<a class="toc-top" href="#main">' + L(LABELS.backtop) + ' ↑</a>';
+    toc.innerHTML = html;
+    spy();
+  }
+
+  function spy() {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#page-toc a[href^="#"]'));
+    if (!links.length) return;
+    var heads = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+    if (!heads.length) return;
+
+    function update() {
+      var y = window.scrollY + parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) + 40;
+      var idx = 0;
+      for (var i = 0; i < heads.length; i++) {
+        if (heads[i].getBoundingClientRect().top + window.scrollY <= y) idx = i;
+      }
+      links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+    }
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
   }
 
   /* ---------------- pager & edit link ---------------- */
@@ -168,17 +248,16 @@
     for (var i = 0; i < list.length; i++) { if (list[i].href === cur) { idx = i; break; } }
 
     if (pager) {
+      var out = '';
       if (idx > 0) {
         var prev = list[idx - 1];
-        pager.innerHTML = '<a href="' + hrefFor(prev.href) + '"><span class="dir">' + L(LABELS.prev) + '</span><span class="name">' + L(prev) + '</span></a>';
-        if (idx < list.length - 1) {
-          var next = list[idx + 1];
-          pager.innerHTML += '<a class="next" href="' + hrefFor(next.href) + '"><span class="dir">' + L(LABELS.next) + '</span><span class="name">' + L(next) + '</span></a>';
-        }
-      } else if (idx === 0 && list.length > 1) {
-        var n = list[1];
-        pager.innerHTML = '<span></span><a class="next" href="' + hrefFor(n.href) + '"><span class="dir">' + L(LABELS.next) + '</span><span class="name">' + L(n) + '</span></a>';
+        out += '<a href="' + hrefFor(prev.href) + '"><span class="dir">' + L(LABELS.prev) + '</span><span class="name">' + L(prev) + '</span></a>';
       }
+      if (idx !== -1 && idx < list.length - 1) {
+        var next = list[idx + 1];
+        out += '<a class="next" href="' + hrefFor(next.href) + '"><span class="dir">' + L(LABELS.next) + '</span><span class="name">' + L(next) + '</span></a>';
+      }
+      pager.innerHTML = out;
     }
 
     var edit = document.getElementById('edit-row');
@@ -205,7 +284,6 @@
       '</div>';
   }
 
-  /* ---------------- title / lang ---------------- */
   function applyTitle() {
     var titleEl = document.querySelector('title');
     if (!titleEl) return;
@@ -221,6 +299,7 @@
     applyTitle();
     renderHeader();
     renderSidebar();
+    buildToc();
     renderFooterNav();
     renderFooter();
     applyCodeCopyLabels();
@@ -234,15 +313,14 @@
 
   /* ---------------- code blocks ---------------- */
   function enhanceCode() {
-    var blocks = document.querySelectorAll('pre[data-file], pre');
-    Array.prototype.forEach.call(blocks, function (pre) {
+    Array.prototype.forEach.call(document.querySelectorAll('pre'), function (pre) {
       if (pre.closest('.code-block')) return;
       var wrap = document.createElement('div');
       wrap.className = 'code-block';
       var head = document.createElement('div');
       head.className = 'code-head';
-      var name = pre.getAttribute('data-file') || '';
-      head.innerHTML = '<span class="file">' + (name || 'code') + '</span>' +
+      var name = pre.getAttribute('data-file') || 'code';
+      head.innerHTML = '<span class="file">' + name + '</span>' +
         '<button class="copy-btn" type="button" data-action="copy">' + L(LABELS.copy) + '</button>';
       pre.parentNode.insertBefore(wrap, pre);
       wrap.appendChild(head);
@@ -315,5 +393,6 @@
   renderSidebar();
   renderFooter();
   enhanceCode();
+  buildToc();
   renderFooterNav();
 })();

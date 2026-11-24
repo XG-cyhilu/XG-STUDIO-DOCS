@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="Void Craft Launcher · 说明" data-en="Void Craft Launcher · Overview">Void Craft Launcher · 说明</title>
+<meta name="description" content="Void Craft Launcher 项目说明：定位、技术栈、界面与当前状态。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>Void Craft Launcher</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">说明</span><span data-lang="en">Overview</span>
+    </p>
+
+    <h1><span data-lang="zh">项目说明</span><span data-lang="en">Project Overview</span></h1>
+    <p class="sub" data-lang="zh">面向公开发布的 Minecraft Java 版启动器，C++17 + Direct2D 自绘，目录结构与 PCL / 官方启动器完全一致。</p>
+    <p class="sub" data-lang="en">A public Minecraft: Java Edition launcher drawn with C++17 and Direct2D, keeping its directory layout identical to PCL and the official launcher.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17</span>
+      <span class="chip">Direct2D</span>
+      <span class="chip">CMake</span>
+      <span class="chip">AGPL-3.0</span>
+      <span class="chip">v0.2 <span data-lang="zh">重构中</span><span data-lang="en">refactor</span></span>
+    </div>
+
+    <div class="note">
+      <p data-lang="zh"><strong>当前状态：</strong>v0.2 重构中。架构文档已定稿（2026-11-24），<code>src/</code> 尚未落地，因此本组页面没有实机截图；Electron 版本已移除。</p>
+      <p data-lang="en"><strong>Status:</strong> mid-refactor at v0.2. The architecture document is final (2026-11-24) but <code>src/</code> has not been written yet, so these pages carry no real screenshots; the Electron build has been removed.</p>
+    </div>
+
+    <h2 id="what"><span data-lang="zh">这是什么</span><span data-lang="en">What it is</span></h2>
+    <p data-lang="zh">
+      Void Craft Launcher（VCL）是一个 Minecraft Java 版启动器。它的核心主张不是「功能最多」，而是
+      <strong>目录结构完全兼容</strong>：任意一个标准 <code>.minecraft</code> 文件夹都能直接作为 Root 添加，
+      扫到的版本立刻可启动，也可以和 PCL、官方启动器共用同一个目录。
+    </p>
+    <p data-lang="en">
+      Void Craft Launcher (VCL) is a Minecraft: Java Edition launcher. Its central claim is not "most features"
+      but <strong>full layout compatibility</strong>: any standard <code>.minecraft</code> folder can be added as a
+      Root, the versions found there launch immediately, and it can share a folder with PCL or the official launcher.
+    </p>
+    <p data-lang="zh">四条原则决定了它的形态：</p>
+    <p data-lang="en">Four principles shape it:</p>
+    <ul>
+      <li data-lang="zh"><strong>不污染游戏目录：</strong>除 <code>versions\&lt;name&gt;\.vcl\</code> 这一个私有元数据目录外，不往 Root 里写东西。</li>
+      <li data-lang="en"><strong>No pollution:</strong> nothing is written into the Root except one private metadata directory, <code>versions\&lt;name&gt;\.vcl\</code>.</li>
+      <li data-lang="zh"><strong>不复制 GPL 实现：</strong>只按公开规范（Mojang version json、Fabric meta、Forge installer）实现。</li>
+      <li data-lang="en"><strong>No GPL code copied:</strong> implementation follows public specifications only (Mojang version json, Fabric meta, Forge installer).</li>
+      <li data-lang="zh"><strong>启动与安装外包：</strong>classpath 求值、loader 安装、JVM 拉起交给 Rust 库 LightyLauncherLib，VCL 只做外壳、目录、元数据与界面。</li>
+      <li data-lang="en"><strong>Delegate launch and install:</strong> classpath resolution, loader installation and JVM spawning belong to the Rust library LightyLauncherLib; VCL handles shell, directories, metadata and UI.</li>
+      <li data-lang="zh"><strong>UI 与业务分离：</strong>UI 只读状态、只发 Intent，业务层不依赖 UI，可以命令行跑通。</li>
+      <li data-lang="en"><strong>UI/business separation:</strong> the UI only reads state and dispatches Intents; the business layer has no UI dependency and runs headless.</li>
+    </ul>
+
+    <h2 id="tech"><span data-lang="zh">技术栈</span><span data-lang="en">Technology stack</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">方面</span><span data-lang="en">Aspect</span></th><th><span data-lang="zh">选型</span><span data-lang="en">Choice</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">语言 / 平台</span><span data-lang="en">Language / platform</span></td><td>C++17，MSVC x64，Windows</td></tr>
+          <tr><td><span data-lang="zh">界面</span><span data-lang="en">UI</span></td><td>VCUI（XGStudio-cpp-UI），Direct2D 自绘，源码内置于 <code>third_party/VCUI</code></td></tr>
+          <tr><td><span data-lang="zh">基础能力</span><span data-lang="en">Foundations</span></td><td>cpploclib（XGStudio-cpp-Core）：XGLOG / XGFS / XGCFG / XGDL / XGZIP / XGCRYPTO / XGPROC / XGNET / XGTHREAD / XGSHELL / XGCRASH，源码内置</td></tr>
+          <tr><td><span data-lang="zh">启动 / 安装内核</span><span data-lang="en">Launch / install core</span></td><td>LightyLauncherLib（Rust staticlib + C ABI）</td></tr>
+          <tr><td><span data-lang="zh">构建</span><span data-lang="en">Build</span></td><td>CMake ≥ 3.20，顶层工程 + <code>add_subdirectory</code>，vcpkg 提供 curl</td></tr>
+          <tr><td><span data-lang="zh">运行时</span><span data-lang="en">Runtime</span></td><td>全工程统一 <code>/MD</code> 动态 CRT</td></tr>
+          <tr><td><span data-lang="zh">许可</span><span data-lang="en">License</span></td><td>AGPL-3.0（内置依赖保持 Apache-2.0）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="ui"><span data-lang="zh">界面</span><span data-lang="en">Interface</span></h2>
+    <p data-lang="zh">界面由 VCUI 承载，规划中的骨架是经典四段结构：</p>
+    <p data-lang="en">The interface is built on VCUI. The planned skeleton is a conventional four-part structure:</p>
+    <div class="matrix">
+      <div class="cell"><b><span data-lang="zh">标题栏</span><span data-lang="en">Title bar</span></b><span data-lang="zh">自绘、可拖拽、与窗口控件同一套主题</span><span data-lang="en">Custom-drawn, draggable, sharing the window's theme</span></div>
+      <div class="cell"><b><span data-lang="zh">侧边导航</span><span data-lang="en">Side navigation</span></b><span data-lang="zh">实例、下载、设置等入口，带选中态与图标位</span><span data-lang="en">Instances, downloads, settings, with selected state and icon slots</span></div>
+      <div class="cell"><b><span data-lang="zh">内容容器</span><span data-lang="en">Content host</span></b><span data-lang="zh">页面栈与切换，页面只读状态</span><span data-lang="en">Page stack and transitions; pages only read state</span></div>
+      <div class="cell"><b><span data-lang="zh">状态栏</span><span data-lang="en">Status bar</span></b><span data-lang="zh">任务进度、日志入口、当前 Root</span><span data-lang="en">Task progress, log entry point, current Root</span></div>
+    </div>
+    <p data-lang="zh">
+      主题方面，跟随 VCUI 的浅色 / 深色双主题、强调色与透明度设置；默认浅色，强调色默认 <code>#0071EA</code>，
+      透明度先只作用于背景层。窗口尺寸与 DPI 由 <code>app::App</code> 统一处理。
+    </p>
+    <p data-lang="en">
+      Theming follows VCUI's light/dark pair plus accent colour and opacity settings: light by default, accent
+      <code>#0071EA</code>, with opacity initially applied to the background layer only. Window sizing and DPI
+      are handled centrally by <code>app::App</code>.
+    </p>
+    <p data-lang="zh">由于 <code>src/</code> 尚未落地，本页不附截图；页面清单纯属待定，v0.1 只做容器与占位页验证路由。</p>
+    <p data-lang="en">Because <code>src/</code> is not yet written, this page carries no screenshots; the page list is still open, and v0.1 only builds containers and placeholder pages to validate routing.</p>
+
+    <h2 id="scope"><span data-lang="zh">范围</span><span data-lang="en">Scope</span></h2>
+    <div class="kv">
+      <dt><span data-lang="zh">自己做</span><span data-lang="en">Owned here</span></dt>
+      <dd><span data-lang="zh">Root 管理、版本扫描、实例配置、缓存、日志、界面与交互。</span><span data-lang="en">Root management, version scanning, instance config, caching, logging, UI and interaction.</span></dd>
+      <dt><span data-lang="zh">交给 Lighty</span><span data-lang="en">Delegated to Lighty</span></dt>
+      <dd><span data-lang="zh"><code>inheritsFrom</code> 合并、<code>rules</code> 求值、classpath / natives、参数拼装、JVM 进程、loader 安装、认证。</span><span data-lang="en"><code>inheritsFrom</code> merging, <code>rules</code> evaluation, classpath / natives, argument assembly, the JVM process, loader installation and authentication.</span></dd>
+      <dt><span data-lang="zh">兼容目标</span><span data-lang="en">Compatibility target</span></dt>
+      <dd><span data-lang="zh">PCL 与官方启动器的标准目录布局，可直接互换使用。</span><span data-lang="en">The standard layout of PCL and the official launcher, interchangeable in place.</span></dd>
+      <dt><span data-lang="zh">不追求</span><span data-lang="en">Not pursuing</span></dt>
+      <dd><span data-lang="zh">自研启动内核；跨平台；与 GPL 启动器共享代码。</span><span data-lang="en">A home-grown launch core; cross-platform support; code sharing with GPL launchers.</span></dd>
+    </div>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="reference.html"><span data-lang="zh">参考：启动流程、后端切换与轮询模型</span><span data-lang="en">Reference: launch flow, backend swap and polling model</span></a></li>
+      <li><a href="development.html"><span data-lang="zh">开发：目录规划、核心接口、构建与里程碑</span><span data-lang="en">Development: planned layout, core APIs, build and milestones</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/Void-Craft-Launcher--VCL" target="_blank" rel="noopener"><span data-lang="zh">源码仓库</span><span data-lang="en">Source repository</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>

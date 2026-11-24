@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-Core · 说明" data-en="XGStudio-cpp-Core · Overview">XGStudio-cpp-Core · 说明</title>
+<meta name="description" content="XGStudio-cpp-Core 项目说明：13 个可独立取用的 C++17 基础模块、技术栈与接口形态。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../../assets/css/site.css">
+</head>
+<body data-root="../..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-Core</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">说明</span><span data-lang="en">Overview</span>
+    </p>
+
+    <h1><span data-lang="zh">项目说明</span><span data-lang="en">Project Overview</span></h1>
+    <p class="sub" data-lang="zh">XGstudio 的 C++ 公共组件聚合库，13 个模块各自独立，版本 1.0.0，Apache-2.0 许可。</p>
+    <p class="sub" data-lang="en">XGstudio's aggregate of C++ component libraries — 13 independent modules, version 1.0.0, Apache-2.0.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17</span>
+      <span class="chip">CMake</span>
+      <span class="chip">MSVC / x64</span>
+      <span class="chip">vcpkg</span>
+      <span class="chip">v1.0.0</span>
+      <span class="chip">Apache-2.0</span>
+    </div>
+
+    <h2 id="what"><span data-lang="zh">这是什么</span><span data-lang="en">What it is</span></h2>
+    <p data-lang="zh">
+      这是一组面向 Windows 桌面程序的<strong>基础能力库</strong>：下载、日志、子进程、摘要、压缩、文件系统、配置、线程、
+      HTTP、编解码与密钥、桌面壳集成、崩溃转储，外加一个把它们收拢到一起的聚合头。
+      每个模块都能单独拿走、单独构建，模块之间互不依赖。
+    </p>
+    <p data-lang="en">
+      A set of <strong>foundational libraries</strong> for Windows desktop applications: download, logging,
+      subprocesses, digests, archives, filesystem, configuration, threading, HTTP, encoding and key material,
+      shell integration and crash dumps — plus an aggregate header tying them together. Each module can be taken
+      and built on its own; modules do not depend on one another.
+    </p>
+    <p data-lang="zh">
+      库最初为 Void Craft Launcher 提供地基，但设计上不绑定任何产品：没有 UI、没有全局单例约定，
+      也可以直接用在其他 Windows C++17 工程里。版本变更记录在仓库的 <code>CHANGELOG.md</code>。
+    </p>
+    <p data-lang="en">
+      It was built to underpin Void Craft Launcher, but is not tied to any product: there is no UI and no global
+      singleton convention, so it works in any Windows C++17 project. Changes are recorded in the repository's
+      <code>CHANGELOG.md</code>.
+    </p>
+
+    <h2 id="tech"><span data-lang="zh">技术栈</span><span data-lang="en">Technology stack</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th><span data-lang="zh">方面</span><span data-lang="en">Aspect</span></th><th><span data-lang="zh">选型</span><span data-lang="en">Choice</span></th><th><span data-lang="zh">说明</span><span data-lang="en">Notes</span></th></tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">语言</span><span data-lang="en">Language</span></td><td>C++17</td><td><span data-lang="zh">MSVC，源文件 UTF-8 with BOM</span><span data-lang="en">MSVC, UTF-8 with BOM sources</span></td></tr>
+          <tr><td><span data-lang="zh">构建</span><span data-lang="en">Build</span></td><td>CMake</td><td><span data-lang="zh">每个模块独立目标，带 <code>find_package</code> 导出</span><span data-lang="en">One target per module with <code>find_package</code> exports</span></td></tr>
+          <tr><td><span data-lang="zh">依赖</span><span data-lang="en">Dependencies</span></td><td>vcpkg</td><td><span data-lang="zh">静态三元组；libcurl 走 Schannel，不引入 OpenSSL</span><span data-lang="en">Static triplet; libcurl over Schannel, no OpenSSL</span></td></tr>
+          <tr><td><span data-lang="zh">加密</span><span data-lang="en">Crypto</span></td><td>Windows CNG</td><td><span data-lang="zh">摘要、HMAC、AES-GCM、PBKDF2 全部系统实现</span><span data-lang="en">Digests, HMAC, AES-GCM and PBKDF2 all via CNG</span></td></tr>
+          <tr><td><span data-lang="zh">平台</span><span data-lang="en">Platform</span></td><td>Windows / x64</td><td><span data-lang="zh">只面向 Windows，不做跨平台抽象</span><span data-lang="en">Windows only, no cross-platform abstraction</span></td></tr>
+          <tr><td><span data-lang="zh">许可</span><span data-lang="en">License</span></td><td>Apache-2.0</td><td><span data-lang="zh">每个源文件带 SPDX 标识</span><span data-lang="en">SPDX identifiers in every source file</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="modules"><span data-lang="zh">模块构成</span><span data-lang="en">What it contains</span></h2>
+    <div class="matrix">
+      <div class="cell"><b>XGDL</b><span data-lang="zh">多路复用下载：分块、镜像、续传、校验</span><span data-lang="en">Multiplexed download: chunks, mirrors, resume, verification</span></div>
+      <div class="cell"><b>XGLOG</b><span data-lang="zh">异步日志：环形队列、轮转、UI 拉取</span><span data-lang="en">Async logging: ring queue, rotation, UI polling</span></div>
+      <div class="cell"><b>XGPROC</b><span data-lang="zh">子进程：进程树、按行输出、超时</span><span data-lang="en">Subprocesses: process trees, line output, timeouts</span></div>
+      <div class="cell"><b>XGCRYPTO</b><span data-lang="zh">摘要：MD5 / SHA1 / SHA2、文件哈希</span><span data-lang="en">Digests: MD5 / SHA1 / SHA2 and file hashing</span></div>
+      <div class="cell"><b>XGSECURE</b><span data-lang="zh">Base64、随机数、HMAC、AES-GCM、PBKDF2</span><span data-lang="en">Base64, randomness, HMAC, AES-GCM, PBKDF2</span></div>
+      <div class="cell"><b>XGZIP</b><span data-lang="zh">zip 读解写：ZIP64、inflate、路径防护</span><span data-lang="en">Zip read/extract/write: ZIP64, inflate, path protection</span></div>
+      <div class="cell"><b>XGFS</b><span data-lang="zh">路径处理、原子写、递归遍历、复制删除</span><span data-lang="en">Path handling, atomic writes, traversal, copy/delete</span></div>
+      <div class="cell"><b>XGCFG</b><span data-lang="zh">JSON 配置：宽松解析、点路径、原子保存</span><span data-lang="en">JSON config: lenient parse, dot paths, atomic save</span></div>
+      <div class="cell"><b>XGTHREAD</b><span data-lang="zh">线程池与主线程调度队列</span><span data-lang="en">Thread pool and main-thread dispatch queue</span></div>
+      <div class="cell"><b>XGNET</b><span data-lang="zh">同步 HTTP：连接复用、代理、gzip、cookie</span><span data-lang="en">Sync HTTP: connection reuse, proxies, gzip, cookies</span></div>
+      <div class="cell"><b>XGSHELL</b><span data-lang="zh">单实例、协议关联、托盘、自启、提权</span><span data-lang="en">Single instance, protocols, tray, autostart, elevation</span></div>
+      <div class="cell"><b>XGCRASH</b><span data-lang="zh">崩溃转储：SEH / terminate / VEH</span><span data-lang="en">Crash dumps: SEH / terminate / VEH</span></div>
+      <div class="cell"><b>XGCORE</b><span data-lang="zh">聚合头、版本与模块清单</span><span data-lang="en">Aggregate header, version and module list</span></div>
+    </div>
+
+    <h2 id="interface"><span data-lang="zh">接口形态</span><span data-lang="en">Interface shape</span></h2>
+    <p data-lang="zh">这个项目没有界面。它对使用者的呈现方式是一套统一的 C++ 约定：</p>
+    <p data-lang="en">This project has no user interface. What it presents to consumers is a consistent set of C++ conventions:</p>
+    <ul>
+      <li data-lang="zh"><strong>命名空间隔离：</strong>每个模块一个命名空间（<code>xgdl</code>、<code>xglog</code>、<code>xgcfg</code> …），互不污染。</li>
+      <li data-lang="en"><strong>Namespaced:</strong> one namespace per module (<code>xgdl</code>, <code>xglog</code>, <code>xgcfg</code> …), with no cross-contamination.</li>
+      <li data-lang="zh"><strong>失败用返回值：</strong>接口以 <code>bool</code> 加错误字符串返回，不靠异常穿越模块边界。</li>
+      <li data-lang="en"><strong>Failures by return value:</strong> APIs return <code>bool</code> with an error string; exceptions never cross module boundaries.</li>
+      <li data-lang="zh"><strong>不回调，靠轮询：</strong>下载、日志、子进程、启动事件都由调用方按帧或按间隔取走，UI 不需要处理跨线程回调。</li>
+      <li data-lang="en"><strong>Polling over callbacks:</strong> download, log, subprocess and launch events are pulled by the caller per frame or interval, so the UI never handles cross-thread callbacks.</li>
+      <li data-lang="zh"><strong>路径统一 UTF-8：</strong>对外文件路径参数使用 UTF-8 字符串，只在 Win32 边界转宽字符。</li>
+      <li data-lang="en"><strong>UTF-8 paths:</strong> file path parameters are UTF-8 strings, converted to wide characters only at Win32 boundaries.</li>
+    </ul>
+
+    <h2 id="scope"><span data-lang="zh">适用范围</span><span data-lang="en">Scope</span></h2>
+    <div class="kv">
+      <dt><span data-lang="zh">适合</span><span data-lang="en">Suits</span></dt>
+      <dd><span data-lang="zh">Windows 桌面程序的非 UI 基础层：启动器、更新器、安装器、工具链程序。</span><span data-lang="en">The non-UI foundation of Windows desktop software: launchers, updaters, installers and tooling.</span></dd>
+      <dt><span data-lang="zh">不适合</span><span data-lang="en">Does not suit</span></dt>
+      <dd><span data-lang="zh">跨平台工程；需要 UI 控件或渲染的项目；需要异步回调模型的框架型集成。</span><span data-lang="en">Cross-platform projects; anything needing widgets or rendering; framework integration expecting callback-driven async.</span></dd>
+      <dt><span data-lang="zh">依赖取向</span><span data-lang="en">Dependency stance</span></dt>
+      <dd><span data-lang="zh">只引入 libcurl 一个外部依赖，其余能力尽量落在系统 API（CNG、Win32、DWM）。</span><span data-lang="en">Only one external dependency, libcurl; everything else stays on system APIs (CNG, Win32, DWM).</span></dd>
+      <dt><span data-lang="zh">质量基线</span><span data-lang="en">Quality baseline</span></dt>
+      <dd><span data-lang="zh">13 条 ctest 用例，全部不出网；CI 在 windows-latest 上跑 configure → build → ctest。</span><span data-lang="en">13 ctest cases, none touching the network; CI runs configure → build → ctest on windows-latest.</span></dd>
+    </div>
+
+    <h2 id="next"><span data-lang="zh">继续阅读</span><span data-lang="en">Continue reading</span></h2>
+    <ul>
+      <li><a href="reference.html"><span data-lang="zh">参考：模块画廊与三段核心逻辑</span><span data-lang="en">Reference: module gallery and three core mechanisms</span></a></li>
+      <li><a href="development.html"><span data-lang="zh">开发：模块 API、目录结构与构建</span><span data-lang="en">Development: module APIs, layout and build</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-Core" target="_blank" rel="noopener"><span data-lang="zh">源码仓库</span><span data-lang="en">Source repository</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../../assets/js/site.js"></script>
+</body>
+</html>
