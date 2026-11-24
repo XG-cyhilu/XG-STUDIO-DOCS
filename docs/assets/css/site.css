@@ -308,8 +308,9 @@ details .detail-body pre{margin:8px 0 0}
   *{transition:none!important;animation:none!important}
 }
 
-/* self-drawn scrollbars: thin pill thumb on a transparent track, no arrows */
-html{scrollbar-width:thin !important;scrollbar-color:var(--line-strong) transparent !important}
+/* self-drawn scrollbars: thin pill thumb on a transparent track, no arrows.
+   Chromium ignores ::-webkit-scrollbar as soon as scrollbar-color/scrollbar-width
+   are set, so the standard properties are applied to Firefox only. */
 *::-webkit-scrollbar{width:10px !important;height:10px !important;background:transparent !important}
 *::-webkit-scrollbar-track{background:transparent !important;margin:3px !important}
 *::-webkit-scrollbar-thumb{
@@ -323,3 +324,7 @@ html{scrollbar-width:thin !important;scrollbar-color:var(--line-strong) transpar
 *::-webkit-scrollbar-thumb:active{background-color:var(--accent-hover) !important;background-clip:content-box !important}
 *::-webkit-scrollbar-corner{background:transparent !important}
 *::-webkit-scrollbar-button{display:none !important;width:0 !important;height:0 !important}
+
+@supports not selector(::-webkit-scrollbar){
+  html{scrollbar-width:thin !important;scrollbar-color:var(--line-strong) transparent !important}
+}
