@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-zh="环境与工具链 · XG STUDIO 文档" data-en="Environment &amp; Toolchain · XG STUDIO Documentation">环境与工具链 · XG STUDIO 文档</title>
-<meta name="description" content="XG STUDIO 项目的统一开发环境：Windows 版本、MSVC 与 C++17、CMake 选项、vcpkg 静态依赖、运行时库约定与 CI 流程。">
+<meta name="description" content="XG STUDIO 的开发环境与工具链：C++17/20（MSVC 14.44）、.NET 8/9/10、Node.js 24.21 + Tauri（Rust 1.99）、Python 3.14、Go 1.26、PHP 8.5、Java 17/21，以及构建与源码约定。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/css/site.css">
 </head>
@@ -25,58 +25,130 @@
     </p>
 
     <h1><span data-lang="zh">环境与工具链</span><span data-lang="en">Environment &amp; Toolchain</span></h1>
-    <p class="sub" data-lang="zh">XG STUDIO 各 C++ 项目共用的平台、编译器、构建与依赖约定。</p>
-    <p class="sub" data-lang="en">Platform, compiler, build and dependency conventions shared by the XG STUDIO C++ projects.</p>
+    <p class="sub" data-lang="zh">XG STUDIO 以 C++、Web 与 .NET 为主线，同时覆盖 Python、Go、PHP 与 Java 等方向；本页给出各语言的实际版本基线。</p>
+    <p class="sub" data-lang="en">XG STUDIO works mainly in C++, Web and .NET, with Python, Go, PHP and Java for specific jobs; this page records the actual version baseline for each.</p>
     <div class="doc-meta">
+      <span class="chip">C++17 / C++20</span>
+      <span class="chip">.NET 8 / 9 / 10</span>
+      <span class="chip">Node.js 24</span>
+      <span class="chip">Tauri / Rust 1.99</span>
       <span class="chip">Windows</span>
-      <span class="chip">MSVC / C++17</span>
-      <span class="chip">CMake</span>
-      <span class="chip">vcpkg</span>
     </div>
 
-    <h2 id="platform"><span data-lang="zh">平台与编译器</span><span data-lang="en">Platform and compiler</span></h2>
+    <div class="note">
+      <p data-lang="zh">下表的版本取自 <strong>2026-11-24</strong> 的实机环境（Windows 工作站），不是规划值；升级工具链时请同步更新本页。</p>
+      <p data-lang="en">Versions below were read from the actual workstation on <strong>2026-11-24</strong>, not planned values; update this page whenever the toolchain is upgraded.</p>
+    </div>
+
+    <h2 id="overview"><span data-lang="zh">语言矩阵</span><span data-lang="en">Language matrix</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">领域</span><span data-lang="en">Area</span></th>
+          <th><span data-lang="zh">语言 / 运行时</span><span data-lang="en">Language / runtime</span></th>
+          <th><span data-lang="zh">版本</span><span data-lang="en">Version</span></th>
+          <th><span data-lang="zh">典型用途</span><span data-lang="en">Typical use</span></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span data-lang="zh">桌面（原生）</span><span data-lang="en">Desktop (native)</span></td>
+            <td>C++</td>
+            <td><b>17 / 20</b></td>
+            <td><span data-lang="zh">自绘 UI、启动器、系统级工具</span><span data-lang="en">Self-drawn UI, launchers, system-level tooling</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">桌面（托管）</span><span data-lang="en">Desktop (managed)</span></td>
+            <td>C# / .NET</td>
+            <td><b>8 / 9 / 10</b></td>
+            <td><span data-lang="zh">WPF 应用、内部工具、服务端</span><span data-lang="en">WPF apps, internal tools, services</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">Web 前端</span><span data-lang="en">Web front end</span></td>
+            <td>Node.js + TypeScript</td>
+            <td><b>24.21</b></td>
+            <td><span data-lang="zh">页面、文档站、构建脚本</span><span data-lang="en">Pages, documentation sites, build scripts</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">Web 桌面壳</span><span data-lang="en">Web desktop shell</span></td>
+            <td>Tauri / Rust</td>
+            <td><b>Rust 1.99.1</b></td>
+            <td><span data-lang="zh">轻量跨平台桌面封装</span><span data-lang="en">Lightweight cross-platform desktop packaging</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">脚本 / 工具</span><span data-lang="en">Scripts / tooling</span></td>
+            <td>Python</td>
+            <td><b>3.14</b></td>
+            <td><span data-lang="zh">数据处理、自动化、文档与校验脚本</span><span data-lang="en">Data processing, automation, documentation and validation scripts</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">服务 / CLI</span><span data-lang="en">Services / CLI</span></td>
+            <td>Go</td>
+            <td><b>1.26</b></td>
+            <td><span data-lang="zh">单文件分发的服务与命令行工具</span><span data-lang="en">Single-binary services and command-line tools</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">站点 / 接口</span><span data-lang="en">Sites / APIs</span></td>
+            <td>PHP</td>
+            <td><b>8.5</b></td>
+            <td><span data-lang="zh">轻量站点、接口与后台脚本</span><span data-lang="en">Light sites, APIs and back-office scripts</span></td>
+          </tr>
+          <tr>
+            <td><span data-lang="zh">游戏 / 生态</span><span data-lang="en">Game / ecosystem</span></td>
+            <td>Java</td>
+            <td><b>17 / 21</b></td>
+            <td><span data-lang="zh">Minecraft 相关工具、Mod 构建与运行</span><span data-lang="en">Minecraft tooling, mod builds and runtime</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="cpp"><span data-lang="zh">C++：17 与 20 并行</span><span data-lang="en">C++: 17 and 20 side by side</span></h2>
+    <p data-lang="zh">C++ 是自绘桌面产品的主力语言。工具链固定为 <strong>Visual Studio 2022 + MSVC 14.44</strong>，它在同一套编译器里同时支持 <code>/std:c++17</code> 与 <code>/std:c++20</code>，因此两个标准可以按工程选择，不必准备两套环境。</p>
+    <p data-lang="en">C++ carries the self-drawn desktop products. The toolchain is fixed at <strong>Visual Studio 2022 + MSVC 14.44</strong>, which supports both <code>/std:c++17</code> and <code>/std:c++20</code> in one compiler, so a project can pick either standard without a second environment.</p>
     <div class="table-wrap">
       <table>
         <thead><tr>
           <th><span data-lang="zh">项</span><span data-lang="en">Item</span></th>
-          <th><span data-lang="zh">约定</span><span data-lang="en">Convention</span></th>
+          <th><span data-lang="zh">实测值 / 约定</span><span data-lang="en">Actual value / convention</span></th>
         </tr></thead>
         <tbody>
-          <tr><td><span data-lang="zh">操作系统</span><span data-lang="en">OS</span></td><td><span data-lang="zh">Windows 10 1703（build 15063）及以上，含 Windows 11</span><span data-lang="en">Windows 10 1703 (build 15063) or later, Windows 11 included</span></td></tr>
-          <tr><td><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></td><td><span data-lang="zh">MSVC 2019 / 2022，语言标准 C++17（<code>/std:c++17</code>）</span><span data-lang="en">MSVC 2019/2022 with C++17 (<code>/std:c++17</code>)</span></td></tr>
+          <tr><td><span data-lang="zh">IDE</span><span data-lang="en">IDE</span></td><td>Visual Studio 2022（安装路径 <code>D:\VisualStudio\2022</code>）；CMake 生成器 <code>Visual Studio 17 2022</code></td></tr>
+          <tr><td><span data-lang="zh">MSVC 工具集</span><span data-lang="en">MSVC toolset</span></td><td><code>14.44.35207</code></td></tr>
+          <tr><td><span data-lang="zh">编译器版本</span><span data-lang="en">Compiler version</span></td><td><code>19.44.35230</code>（x64）</td></tr>
+          <tr><td><span data-lang="zh">语言标准</span><span data-lang="en">Language standard</span></td><td><span data-lang="zh">C++17 作为既有库基线；C++20 用于较新的桌面与工具工程</span><span data-lang="en">C++17 as the baseline for existing libraries; C++20 for newer desktop and tooling projects</span></td></tr>
+          <tr><td><span data-lang="zh">构建</span><span data-lang="en">Build</span></td><td>CMake（<code>add_subdirectory</code> 组合依赖）</td></tr>
+          <tr><td><span data-lang="zh">依赖</span><span data-lang="en">Dependencies</span></td><td>vcpkg，静态三元组 <code>x64-windows-static</code></td></tr>
           <tr><td><span data-lang="zh">架构</span><span data-lang="en">Architecture</span></td><td><span data-lang="zh">x64 已验证；x86 / ARM64 未测试</span><span data-lang="en">x64 verified; x86 / ARM64 untested</span></td></tr>
-          <tr><td><span data-lang="zh">IDE / 生成器</span><span data-lang="en">IDE / generator</span></td><td><span data-lang="zh">Visual Studio 2022，CMake 生成器 <code>Visual Studio 17 2022</code></span><span data-lang="en">Visual Studio 2022, CMake generator <code>Visual Studio 17 2022</code></span></td></tr>
+          <tr><td><span data-lang="zh">系统下限</span><span data-lang="en">OS floor</span></td><td><span data-lang="zh">Windows 10 1703（build 15063）及以上，含 Windows 11</span><span data-lang="en">Windows 10 1703 (build 15063) or later, Windows 11 included</span></td></tr>
         </tbody>
       </table>
     </div>
-    <p data-lang="zh">Win10 1703 的下限来自 Per-Monitor V2 DPI（<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>），不是图形栈；Direct2D 1.0 本身在 Win7 + Platform Update 上也可用，但项目不支持 Win7 / 8 / 8.1。</p>
-    <p data-lang="en">The Windows 10 1703 floor comes from Per-Monitor V2 DPI (<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>), not from the graphics stack; Direct2D 1.0 itself runs on Windows 7 with the Platform Update, but Windows 7/8/8.1 are out of scope.</p>
+    <p data-lang="zh">1703 的下限来自 Per-Monitor V2 DPI（<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>），不是图形栈；Direct2D 1.0 本身在 Win7 + Platform Update 上也能跑，但 Win7 / 8 / 8.1 不在支持范围内。</p>
+    <p data-lang="en">The 1703 floor comes from Per-Monitor V2 DPI (<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>), not the graphics stack; Direct2D 1.0 also runs on Windows 7 with the Platform Update, but 7/8/8.1 are out of scope.</p>
 
-    <h2 id="build"><span data-lang="zh">构建</span><span data-lang="en">Build</span></h2>
-    <p data-lang="zh">统一使用 CMake 生成 Visual Studio 工程并构建，顶层工程通过 <code>add_subdirectory</code> 引入依赖：</p>
-    <p data-lang="en">Visual Studio projects are generated and built through CMake, with dependencies pulled in via <code>add_subdirectory</code>:</p>
+    <h3 id="cpp-build"><span data-lang="zh">构建命令</span><span data-lang="en">Build command</span></h3>
+    <p data-lang="zh">统一用 CMake 生成 Visual Studio 工程，顶层通过 <code>add_subdirectory</code> 引入 VCUI / cpploclib：</p>
+    <p data-lang="en">Visual Studio projects are generated through CMake, with VCUI / cpploclib pulled in at the top level via <code>add_subdirectory</code>:</p>
 
 <pre data-file="PowerShell">cmake -S . -B .build -G "Visual Studio 17 2022" -A x64 `
   -DCMAKE_TOOLCHAIN_FILE=&lt;vcpkg&gt;/scripts/buildsystems/vcpkg.cmake `
   -DVCPKG_TARGET_TRIPLET=x64-windows-static
 cmake --build .build --config Release</pre>
 
-    <p data-lang="zh"><code>add_subdirectory</code> 引入 VCUI 时会自动给消费方加上 <code>/std:c++17</code>：公开头文件包含 <code>inline</code> 变量，标准必须传递，否则 MSVC 默认的 <code>/std:c++14</code> 在包含头文件时会直接报错。</p>
-    <p data-lang="en">Adding VCUI through <code>add_subdirectory</code> propagates <code>/std:c++17</code> to consumers automatically: public headers use <code>inline</code> variables, so the standard must be propagated or MSVC's default <code>/std:c++14</code> fails as soon as the header is included.</p>
+    <p data-lang="zh"><code>add_subdirectory</code> 引入 VCUI 时会自动把 <code>/std:c++17</code> 传给消费方：它的公开头文件使用 <code>inline</code> 变量，若标准没传下去，MSVC 默认的 <code>/std:c++14</code> 会在包含头文件时直接报错。切到 C++20 的工程则显式写 <code>/std:c++20</code>。</p>
+    <p data-lang="en">Adding VCUI through <code>add_subdirectory</code> propagates <code>/std:c++17</code> to consumers: its public headers use <code>inline</code> variables, so if the standard is not propagated, MSVC's default <code>/std:c++14</code> fails as soon as the header is included. Projects on C++20 set <code>/std:c++20</code> explicitly.</p>
 
-    <h2 id="deps"><span data-lang="zh">依赖管理</span><span data-lang="en">Dependencies</span></h2>
+    <h3 id="cpp-deps"><span data-lang="zh">依赖来源</span><span data-lang="en">Dependency sources</span></h3>
     <ul>
-      <li data-lang="zh"><strong>VCUI：</strong>无第三方依赖，仅链接系统库 <code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code>，由 <code>VCUI::vcui</code> 自动传递。</li>
+      <li data-lang="zh"><strong>VCUI：</strong>无第三方依赖，只链接系统库 <code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code>，由 <code>VCUI::vcui</code> 自动传递。</li>
       <li data-lang="en"><strong>VCUI:</strong> no third-party dependencies; it links only system libraries (<code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code>), propagated by <code>VCUI::vcui</code>.</li>
-      <li data-lang="zh"><strong>cpploclib：</strong>通过 vcpkg 提供静态依赖（<code>vcpkg.json</code> 已声明）；XGDL 需要的静态 libcurl 必须启用 <code>schannel</code>，不需要 OpenSSL / nghttp2 / zlib。</li>
-      <li data-lang="en"><strong>cpploclib:</strong> static dependencies come from vcpkg (<code>vcpkg.json</code> is included); XGDL's static libcurl must be built with <code>schannel</code>, without OpenSSL, nghttp2 or zlib.</li>
-      <li data-lang="zh"><strong>VCL：</strong>依赖以源码副本内置到 <code>third_party/</code>，不使用 submodule 或 <code>find_package</code>；顶层自行维护 <code>vcpkg.json</code>（至少包含 <code>curl</code>），子目录清单在 <code>add_subdirectory</code> 形态下不生效。</li>
-      <li data-lang="en"><strong>VCL:</strong> dependencies are vendored under <code>third_party/</code> rather than fetched via submodules or <code>find_package</code>; the top level keeps its own <code>vcpkg.json</code> (at least <code>curl</code>), since sub-directory manifests do not apply under <code>add_subdirectory</code>.</li>
+      <li data-lang="zh"><strong>cpploclib：</strong>静态依赖由 vcpkg 提供；XGDL 需要的静态 libcurl 必须启用 <code>schannel</code>，不需要 OpenSSL / nghttp2 / zlib。</li>
+      <li data-lang="en"><strong>cpploclib:</strong> static dependencies come from vcpkg; XGDL's static libcurl must use <code>schannel</code>, without OpenSSL, nghttp2 or zlib.</li>
+      <li data-lang="zh"><strong>VCL：</strong>依赖以源码副本内置在 <code>third_party/</code>，不用 submodule 或 <code>find_package</code>；顶层自带 <code>vcpkg.json</code>（至少 <code>curl</code>）。</li>
+      <li data-lang="en"><strong>VCL:</strong> dependencies are vendored under <code>third_party/</code> rather than fetched via submodules or <code>find_package</code>; the top level keeps its own <code>vcpkg.json</code> (at least <code>curl</code>).</li>
     </ul>
 
-<pre data-file="PowerShell">vcpkg install --triplet x64-windows-static --overlay-ports=path/to/port</pre>
-
-    <h2 id="source"><span data-lang="zh">源码与运行时约定</span><span data-lang="en">Source and runtime conventions</span></h2>
+    <h3 id="cpp-conventions"><span data-lang="zh">源码与运行时约定</span><span data-lang="en">Source and runtime conventions</span></h3>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -84,51 +156,111 @@ cmake --build .build --config Release</pre>
           <th><span data-lang="zh">说明</span><span data-lang="en">Detail</span></th>
         </tr></thead>
         <tbody>
-          <tr><td><span data-lang="zh">源文件编码</span><span data-lang="en">Source encoding</span></td><td><span data-lang="zh">UTF-8；公开头文件为 UTF-8 with BOM，不加 <code>/utf-8</code> 也能正确解析</span><span data-lang="en">UTF-8; public headers use UTF-8 with BOM so they parse correctly without <code>/utf-8</code></span></td></tr>
-          <tr><td><span data-lang="zh">编译器选项</span><span data-lang="en">Compiler flag</span></td><td><span data-lang="zh">工程内显式使用 <code>/utf-8</code>；标准 <code>/std:c++17</code> 必须传递到消费方</span><span data-lang="en"><code>/utf-8</code> is set explicitly; <code>/std:c++17</code> must reach consumers</span></td></tr>
-          <tr><td><span data-lang="zh">CRT 链接</span><span data-lang="en">CRT linkage</span></td><td><span data-lang="zh">VCUI 默认静态库，<code>VCUI_STATIC_RUNTIME=ON</code> 时用 <code>/MT</code>；VCL 全工程统一 <code>/MD</code></span><span data-lang="en">VCUI is a static library and uses <code>/MT</code> only with <code>VCUI_STATIC_RUNTIME=ON</code>; VCL uses <code>/MD</code> everywhere</span></td></tr>
-          <tr><td><span data-lang="zh">许可头</span><span data-lang="en">License header</span></td><td><span data-lang="zh">每个源文件头部带 Apache-2.0 完整声明，末行 <code>SPDX-License-Identifier: Apache-2.0</code></span><span data-lang="en">Each source file carries the full Apache-2.0 notice ending with <code>SPDX-License-Identifier: Apache-2.0</code></span></td></tr>
-          <tr><td><span data-lang="zh">命名空间</span><span data-lang="en">Namespace</span></td><td><span data-lang="zh">VCUI 使用 <code>vcui</code>；组件库以 <code>xg*</code> 前缀区分模块</span><span data-lang="en">VCUI uses <code>vcui</code>; component libraries use the <code>xg*</code> prefix per module</span></td></tr>
+          <tr><td><span data-lang="zh">源文件编码</span><span data-lang="en">Source encoding</span></td><td><span data-lang="zh">UTF-8；公开头文件 UTF-8 with BOM，不加 <code>/utf-8</code> 也能正确解析</span><span data-lang="en">UTF-8; public headers use UTF-8 with BOM so they parse without <code>/utf-8</code></span></td></tr>
+          <tr><td><span data-lang="zh">CRT 链接</span><span data-lang="en">CRT linkage</span></td><td><span data-lang="zh">VCUI 默认静态库，<code>VCUI_STATIC_RUNTIME=ON</code> 时用 <code>/MT</code>；VCL 全工程统一 <code>/MD</code></span><span data-lang="en">VCUI is static and uses <code>/MT</code> only with <code>VCUI_STATIC_RUNTIME=ON</code>; VCL uses <code>/MD</code> everywhere</span></td></tr>
+          <tr><td><span data-lang="zh">许可头</span><span data-lang="en">License header</span></td><td><span data-lang="zh">每个源文件带完整许可声明，末行 <code>SPDX-License-Identifier</code></span><span data-lang="en">Every source file carries the full license notice ending with <code>SPDX-License-Identifier</code></span></td></tr>
+          <tr><td><span data-lang="zh">命名空间</span><span data-lang="en">Namespace</span></td><td><span data-lang="zh">VCUI 用 <code>vcui</code>；组件库按模块前缀 <code>xg*</code>；VCL 统一 <code>vcl</code></span><span data-lang="en">VCUI uses <code>vcui</code>; components use the <code>xg*</code> prefix; VCL uses <code>vcl</code></span></td></tr>
         </tbody>
       </table>
     </div>
 
-    <h2 id="debug"><span data-lang="zh">调试开关</span><span data-lang="en">Debug switches</span></h2>
-    <p data-lang="zh">VCUI 通过环境变量提供诊断能力，无需重新编译：</p>
-    <p data-lang="en">VCUI exposes diagnostics through environment variables without recompiling:</p>
+    <h3 id="cpp-ci"><span data-lang="zh">持续集成</span><span data-lang="en">Continuous integration</span></h3>
+    <p data-lang="zh">cpploclib 的 CI 在 <code>windows-latest</code> 上执行 configure → build → <code>ctest</code>，约 50 秒，全部用例不出网。CI 刻意排除 XGDL 与 XGNET：两者都需要静态 libcurl，而 vcpkg 的 curl 包在接口里带 <code>$&lt;LINK_ONLY:...&gt;</code>，会让 <code>install(EXPORT)</code> 在 CMake 4.x 下报非法上下文。</p>
+    <p data-lang="en">cpploclib's CI runs configure → build → <code>ctest</code> on <code>windows-latest</code> in about 50 seconds, with no network access in any case. XGDL and XGNET are excluded on purpose: both need static libcurl, and vcpkg's curl package exposes <code>$&lt;LINK_ONLY:...&gt;</code>, which makes <code>install(EXPORT)</code> fail as an invalid context under CMake 4.x.</p>
+
+    <h2 id="dotnet"><span data-lang="zh">.NET：8 / 9 / 10</span><span data-lang="en">.NET: 8 / 9 / 10</span></h2>
+    <p data-lang="zh">托管桌面与内部工具使用 C#。三个 SDK 并行安装，按项目目标框架选择：8 与 10 为 LTS，9 为标准支持版本。</p>
+    <p data-lang="en">Managed desktop apps and internal tools use C#. Three SDKs are installed side by side and chosen per project's target framework: 8 and 10 are LTS, 9 is a standard-term release.</p>
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th><span data-lang="zh">变量</span><span data-lang="en">Variable</span></th>
-          <th><span data-lang="zh">作用</span><span data-lang="en">Effect</span></th>
+          <th><span data-lang="zh">项</span><span data-lang="en">Item</span></th>
+          <th><span data-lang="zh">实测值</span><span data-lang="en">Actual value</span></th>
         </tr></thead>
         <tbody>
-          <tr><td><code>VCUI_FPS=1</code></td><td><span data-lang="zh">标题栏显示 fps 与 paint 耗时；无帧时显示 <code>idle last X.Xms</code></span><span data-lang="en">Title bar shows fps and paint time; when idle it shows <code>idle last X.Xms</code></span></td></tr>
-          <tr><td><code>VCUI_NOSHADOW=1</code></td><td><span data-lang="zh">跳过阴影绘制，用于定位阴影开销</span><span data-lang="en">Skips shadow painting to isolate shadow cost</span></td></tr>
-          <tr><td><code>VCUI_NOTEXT=1</code></td><td><span data-lang="zh">跳过文字绘制，用于定位文本排版开销</span><span data-lang="en">Skips text painting to isolate text layout cost</span></td></tr>
-          <tr><td><code>VCUI_DEMO_DARK=1</code></td><td><span data-lang="zh"><code>VCUIFrameDemo</code> 深色启动</span><span data-lang="en">Start <code>VCUIFrameDemo</code> in dark mode</span></td></tr>
-          <tr><td><code>VCUI_NAV_CENTER=1</code></td><td><span data-lang="zh"><code>VCUIFrameDemo</code> 顶栏导航改为最小居中</span><span data-lang="en">Use the compact centred navigation in <code>VCUIFrameDemo</code></span></td></tr>
-          <tr><td><code>VCUI_PAGE=0..3</code></td><td><span data-lang="zh">指定 <code>VCUIFrameDemo</code> 启动页</span><span data-lang="en">Select the starting page of <code>VCUIFrameDemo</code></span></td></tr>
+          <tr><td><span data-lang="zh">SDK</span><span data-lang="en">SDKs</span></td><td><code>8.0.427</code> · <code>9.0.321</code> · <code>10.0.404</code></td></tr>
+          <tr><td><span data-lang="zh">桌面运行时</span><span data-lang="en">Desktop runtimes</span></td><td><code>WindowsDesktop 8.0.34</code> · <code>9.0.23</code> · <code>10.0.15</code></td></tr>
+          <tr><td><span data-lang="zh">UI 方案</span><span data-lang="en">UI approach</span></td><td><span data-lang="zh">WPF + WPF.Ui（Fluent 2 观感），与 C++ 侧的 VCUI 视觉语言对齐</span><span data-lang="en">WPF + WPF.Ui (Fluent 2 look), aligned with VCUI's visual language on the C++ side</span></td></tr>
+          <tr><td><span data-lang="zh">IDE</span><span data-lang="en">IDE</span></td><td>Visual Studio 2022 / VS Code + C# Dev Kit</td></tr>
+          <tr><td><span data-lang="zh">包管理</span><span data-lang="en">Packages</span></td><td>NuGet（<code>dotnet add package</code>）</td></tr>
         </tbody>
       </table>
     </div>
 
-    <h2 id="ci"><span data-lang="zh">持续集成</span><span data-lang="en">Continuous integration</span></h2>
-    <p data-lang="zh">cpploclib 的 CI 为 <code>.github/workflows/windows.yml</code>：在 <code>windows-latest</code> 上执行 configure → build → <code>ctest</code>，任一用例失败即判红，整轮约 50 秒。测试全部不出网，网络相关用例只访问 <code>127.0.0.1</code>。</p>
-    <p data-lang="en">cpploclib's CI is <code>.github/workflows/windows.yml</code>: configure → build → <code>ctest</code> on <code>windows-latest</code>; any failing case turns the run red, and a full round takes about 50 seconds. No test reaches the internet — network-related cases only use <code>127.0.0.1</code>.</p>
-    <p data-lang="zh">CI 刻意排除 XGDL 与 XGNET：两者都需要静态 libcurl，而 vcpkg 的 curl CMake 包在接口中带 <code>$&lt;LINK_ONLY:...&gt;</code> 依赖，会让 <code>install(EXPORT)</code> 在 CMake 4.x 下报非法上下文（<code>$&lt;LINK_ONLY:...&gt; may only be used for linking</code>）。这两个模块的回归在本地通过 <code>xgdl_demo --selfcheck</code> 与 <code>xgnet_demo</code> 完成。</p>
-    <p data-lang="en">CI deliberately excludes XGDL and XGNET: both need a static libcurl, and vcpkg's curl CMake package exposes <code>$&lt;LINK_ONLY:...&gt;</code> dependencies that make <code>install(EXPORT)</code> fail as an invalid context under CMake 4.x (<code>$&lt;LINK_ONLY:...&gt; may only be used for linking</code>). Those two modules are regressed locally through <code>xgdl_demo --selfcheck</code> and <code>xgnet_demo</code>.</p>
+<pre data-file="PowerShell">dotnet --list-sdks
+dotnet new wpf -n XgTool -f net10.0
+dotnet build -c Release</pre>
+
+    <h2 id="web"><span data-lang="zh">Web：Node.js 24 + Tauri</span><span data-lang="en">Web: Node.js 24 + Tauri</span></h2>
+    <p data-lang="zh">Web 方向分两层：页面与工具链跑在 Node.js 上，需要桌面壳时用 Tauri，Rust 侧由 <code>rustc 1.99.1</code> 编译。前端以 TypeScript 为主，包管理统一 pnpm。</p>
+    <p data-lang="en">Web work has two layers: pages and tooling run on Node.js, and desktop shells use Tauri, whose Rust side is built by <code>rustc 1.99.1</code>. Front ends are TypeScript-first, with pnpm as the package manager.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">项</span><span data-lang="en">Item</span></th>
+          <th><span data-lang="zh">实测值</span><span data-lang="en">Actual value</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">Node.js</span><span data-lang="en">Node.js</span></td><td><code>v24.21.0</code></td></tr>
+          <tr><td><span data-lang="zh">npm</span><span data-lang="en">npm</span></td><td><code>11.19.0</code></td></tr>
+          <tr><td><span data-lang="zh">包管理器</span><span data-lang="en">Package manager</span></td><td>pnpm（<code>pnpm-lock.yaml</code> 入库）</td></tr>
+          <tr><td><span data-lang="zh">桌面壳</span><span data-lang="en">Desktop shell</span></td><td>Tauri <span data-lang="zh">（前端 + Rust 后端）</span><span data-lang="en">(front end + Rust backend)</span></td></tr>
+          <tr><td><span data-lang="zh">Rust</span><span data-lang="en">Rust</span></td><td><code>rustc 1.99.1</code> · <code>cargo 1.99.1</code>（stable，rustup 管理）</td></tr>
+          <tr><td><span data-lang="zh">构建工具</span><span data-lang="en">Build tools</span></td><td>Vite（<span data-lang="zh">前端开发与打包</span><span data-lang="en">front-end dev and bundling</span>）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+<pre data-file="PowerShell">pnpm install
+pnpm dev            # 前端开发服务器
+pnpm tauri dev      # 桌面壳联调
+pnpm tauri build    # 产物打包</pre>
+
+    <h2 id="others"><span data-lang="zh">其他语言</span><span data-lang="en">Other languages</span></h2>
+    <p data-lang="zh">这些语言不承担主线产品，但贯穿构建、运维与生态适配：</p>
+    <p data-lang="en">These do not carry the main products, but run through builds, operations and ecosystem work:</p>
+    <div class="matrix">
+      <div class="cell"><b>Python 3.14.10</b><span data-lang="zh">脚本、数据处理、文档校验与自动化</span><span data-lang="en">Scripts, data work, documentation checks and automation</span></div>
+      <div class="cell"><b>Go 1.26.10</b><span data-lang="zh">单文件分发的服务与 CLI，交叉编译方便</span><span data-lang="en">Single-binary services and CLIs, easy cross-compilation</span></div>
+      <div class="cell"><b>PHP 8.5.12</b><span data-lang="zh">轻量站点、接口与后台脚本（NTS, VC++ 2022 x64）</span><span data-lang="en">Light sites, APIs and back-office scripts (NTS, VC++ 2022 x64)</span></div>
+      <div class="cell"><b>Java 17 / 21</b><span data-lang="zh">JDK 17 与 21（MSBuild / Temurin），Minecraft 工具链与 Mod 构建</span><span data-lang="en">JDK 17 and 21 (MSBuild / Temurin), Minecraft tooling and mod builds</span></div>
+    </div>
+    <p data-lang="zh">Java 侧同时保留了 JDK 8 与 25 的安装（用于兼容旧版本游戏与前瞻验证），但对外声明与构建基线是 <strong>17 / 21</strong>；构建用 Gradle，Maven 仅用于少数依赖解析。</p>
+    <p data-lang="en">JDK 8 and 25 are also installed (for legacy game versions and forward-looking checks), but the declared build baseline is <strong>17 / 21</strong>. Gradle handles builds; Maven is used only for occasional dependency resolution.</p>
+
+    <h2 id="tools"><span data-lang="zh">通用工具</span><span data-lang="en">Shared tooling</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">类别</span><span data-lang="en">Category</span></th>
+          <th><span data-lang="zh">使用</span><span data-lang="en">Used</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">版本控制</span><span data-lang="en">Version control</span></td><td>Git（<span data-lang="zh">命令行 + VS / VS Code 集成</span><span data-lang="en">CLI plus VS / VS Code integration</span>），<span data-lang="zh">提交信息用英文祈使句</span><span data-lang="en">commit messages use the English imperative</span></td></tr>
+          <tr><td><span data-lang="zh">编辑器 / IDE</span><span data-lang="en">Editors / IDEs</span></td><td>Visual Studio 2022、VS Code、IntelliJ IDEA</td></tr>
+          <tr><td><span data-lang="zh">终端</span><span data-lang="en">Terminal</span></td><td>Windows Terminal + PowerShell 7</td></tr>
+          <tr><td><span data-lang="zh">文档</span><span data-lang="en">Docs</span></td><td><span data-lang="zh">Markdown / HTML，静态托管（GitHub Pages）</span><span data-lang="en">Markdown / HTML on static hosting (GitHub Pages)</span></td></tr>
+          <tr><td><span data-lang="zh">CI</span><span data-lang="en">CI</span></td><td>GitHub Actions（<code>windows-latest</code>）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">跨语言共用的三条硬约定：文本文件一律 UTF-8；路径在对外接口上统一用正斜杠或平台原生形式并明确说明；任何新增第三方依赖都要先记录来源、版本与许可，再进代码。</p>
+    <p data-lang="en">Three conventions hold across languages: text files are always UTF-8; path APIs state clearly whether they take forward slashes or native separators; and any new third-party dependency is recorded with source, version and licence before it enters the code.</p>
 
     <h2 id="related"><span data-lang="zh">相关页面</span><span data-lang="en">Related pages</span></h2>
     <ul>
       <li><a href="quick-start.html"><span data-lang="zh">快速开始：仓库结构与发布</span><span data-lang="en">Quick Start: layout and publishing</span></a></li>
-      <li><a href="../projects/xgstudio-cpp-ui/development.html"><span data-lang="zh">XGStudio-cpp-UI：构建与集成完整说明</span><span data-lang="en">XGStudio-cpp-UI: full build and integration guide</span></a></li>
-      <li><a href="../projects/xgstudio-cpp-core/development.html"><span data-lang="zh">XGStudio-cpp-Core：模块与模块开关</span><span data-lang="en">XGStudio-cpp-Core: modules and options</span></a></li>
+      <li><a href="design.html"><span data-lang="zh">设计与视觉规范</span><span data-lang="en">Design &amp; visual system</span></a></li>
+      <li><a href="../projects/xgstudio-cpp-ui/development.html"><span data-lang="zh">XGStudio-cpp-UI：构建与集成</span><span data-lang="en">XGStudio-cpp-UI: build and integration</span></a></li>
+      <li><a href="../projects/xgstudio-cpp-core/development.html"><span data-lang="zh">XGStudio-cpp-Core：模块与开关</span><span data-lang="en">XGStudio-cpp-Core: modules and options</span></a></li>
+      <li><a href="../projects/void-craft-launcher/development.html"><span data-lang="zh">VCL：构建与依赖内置</span><span data-lang="en">VCL: build and vendored dependencies</span></a></li>
     </ul>
 
     <nav id="pager" class="pager" aria-label="Page navigation"></nav>
     <div id="edit-row" class="edit-row"></div>
   </main>
+
+  <aside id="page-toc" class="page-toc" aria-label="On this page"></aside>
 </div>
 
 <footer id="site-footer" class="site-footer"></footer>
