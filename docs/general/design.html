@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="设计与视觉规范 · XG STUDIO 文档" data-en="Design &amp; Visual System · XG STUDIO Documentation">设计与视觉规范 · XG STUDIO 文档</title>
+<meta name="description" content="XG STUDIO 桌面产品的视觉与交互规范：Fluent 2 度量、Token 色彩体系、type ramp 排版、键盘焦点与动效曲线。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-root="..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">通用文档</span><span data-lang="en">General</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">设计与视觉规范</span><span data-lang="en">Design &amp; Visual System</span>
+    </p>
+
+    <h1><span data-lang="zh">设计与视觉规范</span><span data-lang="en">Design &amp; Visual System</span></h1>
+    <p class="sub" data-lang="zh">桌面产品的视觉与交互基线，以 Fluent 2 为准，由 XGStudio-cpp-UI 具体实现。</p>
+    <p class="sub" data-lang="en">The visual and interaction baseline for the desktop products, following Fluent 2 and implemented by XGStudio-cpp-UI.</p>
+    <div class="doc-meta">
+      <span class="chip">Fluent 2</span>
+      <span class="chip">Token</span>
+      <span class="chip">Metrics</span>
+      <span class="chip">Type ramp</span>
+    </div>
+
+    <h2 id="principle"><span data-lang="zh">基本原则</span><span data-lang="en">Principles</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>单一底座：</strong>尺寸走 <code>Metrics</code>，颜色走 <code>Token</code>，字号走 type ramp；不在业务代码里写裸数字、裸色值与裸字号。</li>
+      <li data-lang="en"><strong>Single foundation:</strong> sizes come from <code>Metrics</code>, colours from <code>Token</code> and font sizes from the type ramp; business code never hard-codes raw numbers, colours or sizes.</li>
+      <li data-lang="zh"><strong>浅色 / 深色对等：</strong>两档明暗 × 两套色板（Microsoft / GitHub）都要成立；切换主题时同步系统标题栏明暗，不出现半深半浅的界面。</li>
+      <li data-lang="en"><strong>Light and dark parity:</strong> both modes across both palettes (Microsoft / GitHub) must hold up; theme switches also update the system title bar so the window is never half dark.</li>
+      <li data-lang="zh"><strong>全自绘：</strong>界面不含系统控件，几何、描边、阴影与文字都由 Direct2D 绘制，视觉不随系统主题或高对比度设置漂移。</li>
+      <li data-lang="en"><strong>Fully self-drawn:</strong> no system controls; geometry, strokes, shadows and text are painted by Direct2D, so visuals do not drift with system themes or contrast settings.</li>
+      <li data-lang="zh"><strong>可访问性：</strong>所有可交互控件可键盘到达，焦点环按 focus-visible 规则显示，文字对比度按 Fluent 的层级关系保证。</li>
+      <li data-lang="en"><strong>Accessibility:</strong> every interactive control is keyboard reachable, the focus ring follows focus-visible rules, and text contrast follows Fluent's hierarchy.</li>
+    </ul>
+
+    <h2 id="metrics"><span data-lang="zh">尺寸与度量</span><span data-lang="en">Sizing and metrics</span></h2>
+    <p data-lang="zh"><code>Theme::m</code> 承载全部 Fluent 2 度量；修改这里即可整体换皮，不需要逐个控件调整。</p>
+    <p data-lang="en"><code>Theme::m</code> holds all Fluent 2 metrics; changing them reskins the whole library without touching individual controls.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">字段</span><span data-lang="en">Field</span></th>
+          <th><span data-lang="zh">含义</span><span data-lang="en">Meaning</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>radiusBtn</code> / <code>radiusInput</code></td><td><span data-lang="zh">按钮与输入框圆角</span><span data-lang="en">Button and input corner radius</span></td></tr>
+          <tr><td><code>radiusCard</code> / <code>radiusPanel</code></td><td><span data-lang="zh">卡片与过渡面板圆角</span><span data-lang="en">Card and panel radius</span></td></tr>
+          <tr><td><code>controlH</code> / <code>rowH</code></td><td><span data-lang="zh">控件高度与列表行高</span><span data-lang="en">Control height and list row height</span></td></tr>
+          <tr><td><code>gap</code> / <code>padCard</code></td><td><span data-lang="zh">默认间距与卡片内边距</span><span data-lang="en">Default gap and card padding</span></td></tr>
+          <tr><td><code>borderW</code></td><td><span data-lang="zh">控件描边宽度</span><span data-lang="en">Control stroke width</span></td></tr>
+          <tr><td><code>family</code></td><td><span data-lang="zh">字体族（默认 Segoe UI Variable）</span><span data-lang="en">Font family (Segoe UI Variable by default)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">布局遵循三条规则：<code>W/H &gt; 0</code> 为硬尺寸、<code>&lt; 0</code> 交给内容或容器、<code>Grow</code> 参与主轴剩余空间分配；子项一律夹在容器内容区内；<code>Desired</code> 返回真实内容尺寸，不能返回可用尺寸。</p>
+    <p data-lang="en">Layout follows three rules: <code>W/H &gt; 0</code> is a hard size, <code>&lt; 0</code> delegates to content or container, and <code>Grow</code> distributes slack on the main axis; children are always clamped to the container's content box; <code>Desired</code> returns real content size, never the available size.</p>
+
+    <h2 id="color"><span data-lang="zh">色彩</span><span data-lang="en">Colour</span></h2>
+    <p data-lang="zh">基础色板由四个 Token 起步，其余颜色全部由强调色与明暗派生：</p>
+    <p data-lang="en">Four base tokens seed the palette; every other colour is derived from the accent and the mode:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Token</th>
+          <th><span data-lang="zh">语义</span><span data-lang="en">Meaning</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>kp</code></td><td><span data-lang="zh">卡面 / 控件底色（key surface）</span><span data-lang="en">Key surface</span></td></tr>
+          <tr><td><code>bj</code></td><td><span data-lang="zh">页面背景</span><span data-lang="en">Page background</span></td></tr>
+          <tr><td><code>xt</code></td><td><span data-lang="zh">悬停填充 / 禁用控件底色</span><span data-lang="en">Hover fill / disabled surface</span></td></tr>
+          <tr><td><code>wz</code></td><td><span data-lang="zh">主文字</span><span data-lang="en">Primary text</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">强调色默认 <code>#0071EA</code>，可用 <code>SetAccent</code> 覆盖。派生规则固定：悬停提亮 8%、按下压暗 10%；<code>onAccent</code> 按亮度自动取黑或白；<code>accentSoft</code> 为 12% 透明、<code>accentSel</code> 为 18%；二级文字混向背景 45%、三级 65%；描边混向卡面 84%（深色为白色 14%），分隔线为 90%（深色 8%）。</p>
+    <p data-lang="en">The accent defaults to <code>#0071EA</code> and can be replaced via <code>SetAccent</code>. Derivation is fixed: hover lightens by 8%, press darkens by 10%; <code>onAccent</code> picks black or white from luminance; <code>accentSoft</code> is 12% and <code>accentSel</code> 18%; secondary text mixes 45% toward the background and tertiary 65%; borders mix 84% toward the key surface (14% white in dark mode) and dividers 90% (8% in dark).</p>
+
+    <h2 id="type"><span data-lang="zh">排版</span><span data-lang="en">Typography</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">档位</span><span data-lang="en">Style</span></th>
+          <th><span data-lang="zh">字号 / 行高</span><span data-lang="en">Size / line height</span></th>
+          <th><span data-lang="zh">字重</span><span data-lang="en">Weight</span></th>
+          <th><span data-lang="zh">用途</span><span data-lang="en">Usage</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>Caption2</code></td><td>10 / 14</td><td>400</td><td><span data-lang="zh">角标、极小注脚</span><span data-lang="en">Micro labels and footnotes</span></td></tr>
+          <tr><td><code>Caption1</code></td><td>12 / 16</td><td>400 / 600 / 700</td><td><span data-lang="zh">辅助文字、表格副值</span><span data-lang="en">Secondary text, table sub-values</span></td></tr>
+          <tr><td><code>Body1</code></td><td>14 / 20</td><td>400 / 600</td><td><span data-lang="zh">正文、表单值</span><span data-lang="en">Body copy, form values</span></td></tr>
+          <tr><td><code>Subtitle2</code> / <code>Subtitle1</code></td><td>16 / 22、20 / 26</td><td>600</td><td><span data-lang="zh">小标题与区块标题</span><span data-lang="en">Minor and section headings</span></td></tr>
+          <tr><td><code>Title3</code> / <code>Title1</code></td><td>24 / 32、32 / 40</td><td>600</td><td><span data-lang="zh">页面与实例主标题</span><span data-lang="en">Page and instance titles</span></td></tr>
+          <tr><td><code>LargeTitle</code> / <code>Display</code></td><td>40 / 52、68 / 92</td><td>600</td><td><span data-lang="zh">大屏头图</span><span data-lang="en">Hero display</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">行高随档位固定（32px 标题取 40 行高，而非 1.55 倍），非标准字号由 <code>TypeFor(px)</code> 落到最近档位并等比缩放。</p>
+    <p data-lang="en">Line heights are fixed per style (a 32 px title uses 40, not 1.55×), and non-standard sizes snap to the nearest ramp entry through <code>TypeFor(px)</code> with proportional scaling.</p>
+
+    <h2 id="interaction"><span data-lang="zh">交互与动效</span><span data-lang="en">Interaction and motion</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>焦点环：</strong>控件框外扩 2px 绘制 2px 强调色描边，整棵树绘制完成后叠加，并夹在最近的 <code>Clip</code> 容器内；仅键盘操作时出现。</li>
+      <li data-lang="en"><strong>Focus ring:</strong> a 2 px accent stroke offset 2 px outside the control bounds, painted after the tree and clipped to the nearest <code>Clip</code> container; it appears only for keyboard interaction.</li>
+      <li data-lang="zh"><strong>键盘：</strong><code>Tab</code> 按树序移动焦点，视口外自动滚入最近的 <code>ScrollView</code>；方向键对 <code>Slider</code> 步进 1%（按 <code>Shift</code> 为 10%），<code>F4</code> / <code>Alt+↓</code> 展开下拉，<code>Esc</code> 先收起最上层弹层。</li>
+      <li data-lang="en"><strong>Keyboard:</strong> <code>Tab</code> moves focus in tree order and scrolls the nearest <code>ScrollView</code> when off-screen; arrows step <code>Slider</code> by 1% (10% with <code>Shift</code>), <code>F4</code> / <code>Alt+↓</code> opens dropdowns, and <code>Esc</code> dismisses the topmost layer first.</li>
+      <li data-lang="zh"><strong>入场动画：</strong>单项 252ms，行间错峰 40ms（上限 240ms）；缓动为 <code>cubic-bezier(0.1, 0.9, 0.2, 1)</code>，起步快、收尾慢。</li>
+      <li data-lang="en"><strong>Entrance motion:</strong> 252 ms per item with a 40 ms stagger (capped at 240 ms); easing is <code>cubic-bezier(0.1, 0.9, 0.2, 1)</code>, fast in and slow out.</li>
+      <li data-lang="zh"><strong>持续动画：</strong>只有 <code>Progress</code> 不确定态这类本身需要持续运动的控件才保持 60fps，其余界面静止时挂起等待消息。</li>
+      <li data-lang="en"><strong>Continuous motion:</strong> only controls that inherently animate — such as an indeterminate <code>Progress</code> — keep 60 fps; everything else suspends to the message queue when still.</li>
+    </ul>
+
+    <h2 id="constraints"><span data-lang="zh">实现约束</span><span data-lang="en">Implementation constraints</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>只用 Direct2D 1.0：</strong>不依赖 <code>ID2D1Effect</code>、D3D11 设备、Acrylic / Mica；无障碍环境下可回退 WARP 软渲染。</li>
+      <li data-lang="en"><strong>Direct2D 1.0 only:</strong> no <code>ID2D1Effect</code>, D3D11 device, Acrylic or Mica; WARP software rendering is the fallback.</li>
+      <li data-lang="zh"><strong>阴影：</strong>4 层缩放的圆角位图叠加，带尺寸取整与最多 64 张的缓存；不是实时高斯模糊。</li>
+      <li data-lang="en"><strong>Shadows:</strong> four scaled rounded-rect bitmaps with size rounding and a 64-entry cache; not a real-time Gaussian blur.</li>
+      <li data-lang="zh"><strong>输入法：</strong>文本框必须处理组合串与候选窗定位，组合串在控件内带下划线渲染，光标随组合推进。</li>
+      <li data-lang="en"><strong>IME:</strong> text boxes must position the composition string and candidate window; composition text is underlined inside the control and the caret advances with it.</li>
+      <li data-lang="zh"><strong>文案：</strong>遵循 Fluent 内容规范，英文使用句式大小写（sentence case），不靠全大写或感叹号制造强调。</li>
+      <li data-lang="en"><strong>Copy:</strong> follow Fluent content guidance — sentence case in English, with emphasis carried by wording rather than all caps or exclamation marks.</li>
+    </ul>
+
+    <h2 id="related"><span data-lang="zh">相关页面</span><span data-lang="en">Related pages</span></h2>
+    <ul>
+      <li><a href="../projects/xgstudio-cpp-ui.html"><span data-lang="zh">XGStudio-cpp-UI：Token 与 Metrics 的完整取值</span><span data-lang="en">XGStudio-cpp-UI: full Token and Metrics values</span></a></li>
+      <li><a href="toolchain.html"><span data-lang="zh">环境与工具链</span><span data-lang="en">Environment &amp; Toolchain</span></a></li>
+      <li><a href="licensing.html"><span data-lang="zh">许可证与合规</span><span data-lang="en">Licenses &amp; Compliance</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

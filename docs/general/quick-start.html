@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="快速开始 · XG STUDIO 文档" data-en="Quick Start · XG STUDIO Documentation">快速开始 · XG STUDIO 文档</title>
+<meta name="description" content="XG STUDIO 文档站的使用与维护：仓库结构、本地预览、新增页面、双语约定与 GitHub Pages 发布流程。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-root="..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">通用文档</span><span data-lang="en">General</span>
+      <span class="sep">/</span>
+      <span data-lang="zh">快速开始</span><span data-lang="en">Quick Start</span>
+    </p>
+
+    <h1><span data-lang="zh">快速开始</span><span data-lang="en">Quick Start</span></h1>
+    <p class="sub" data-lang="zh">本页说明文档站的目录结构、本地预览方式、新增页面步骤与发布流程。</p>
+    <p class="sub" data-lang="en">This page covers the documentation site's layout, local preview, how to add pages and how publishing works.</p>
+    <div class="doc-meta">
+      <span class="chip"><span data-lang="zh">纯静态</span><span data-lang="en">Static</span></span>
+      <span class="chip">GitHub Pages</span>
+      <span class="chip"><span data-lang="zh">无需构建</span><span data-lang="en">No build step</span></span>
+    </div>
+
+    <h2 id="structure"><span data-lang="zh">站点结构</span><span data-lang="en">Site structure</span></h2>
+    <p data-lang="zh">文档站位于 <code>docs/</code> 目录，由 GitHub Pages 直接托管；没有构建管线，也没有依赖框架。</p>
+    <p data-lang="en">The site lives in <code>docs/</code> and is served directly by GitHub Pages; there is no build pipeline and no framework dependency.</p>
+
+<pre data-file="docs/">docs/
+├── index.html                    # home / catalog
+├── .nojekyll                     # skip Jekyll processing
+├── assets/
+│   ├── css/site.css              # shared styles
+│   ├── js/site.js                # shell, i18n, theme, copy
+│   └── img/                      # screenshots
+├── projects/
+│   ├── xgstudio-cpp-ui.html
+│   ├── xgstudio-cpp-core.html
+│   └── void-craft-launcher.html
+└── general/
+    ├── quick-start.html
+    ├── toolchain.html
+    ├── design.html
+    └── licensing.html</pre>
+
+    <h2 id="preview"><span data-lang="zh">本地预览</span><span data-lang="en">Local preview</span></h2>
+
+<pre data-file="PowerShell">git clone https://github.com/XG-cyhilu/XG-STUDIO-DOCS.git
+cd XG-STUDIO-DOCS/docs
+python -m http.server 8080
+# open http://localhost:8080</pre>
+
+    <p data-lang="zh">直接双击打开 <code>index.html</code> 也能阅读正文，但导航脚本、语言与主题切换依赖相对路径，建议始终通过本地服务器预览。界面语言与主题会保存在浏览器的 <code>localStorage</code>，也可用 <code>?lang=en</code> 链接直接指定英文。</p>
+    <p data-lang="en">Opening <code>index.html</code> directly still renders the content, but the navigation shell, language and theme switching rely on relative paths, so a local server is recommended. Language and theme are persisted in <code>localStorage</code>, and <code>?lang=en</code> forces English.</p>
+
+    <h2 id="add-page"><span data-lang="zh">新增或修改文档</span><span data-lang="en">Adding or editing pages</span></h2>
+    <ol>
+      <li data-lang="zh"><strong>放置页面：</strong>项目文档放入 <code>docs/projects/&lt;slug&gt;.html</code>，通用文档放入 <code>docs/general/&lt;slug&gt;.html</code>。</li>
+      <li data-lang="en"><strong>Place the file:</strong> project guides go to <code>docs/projects/&lt;slug&gt;.html</code>; general guides to <code>docs/general/&lt;slug&gt;.html</code>.</li>
+      <li data-lang="zh"><strong>复用页面骨架：</strong>顶层结构保持 <code>header / layout / sidebar / main / pager / footer</code> 不变，只替换 <code>&lt;main&gt;</code> 内的内容；<code>data-root</code> 在 <code>projects/</code> 与 <code>general/</code> 下为 <code>..</code>，在根目录为 <code>.</code>。</li>
+      <li data-lang="en"><strong>Reuse the skeleton:</strong> keep the <code>header / layout / sidebar / main / pager / footer</code> structure and replace only the contents of <code>&lt;main&gt;</code>; <code>data-root</code> is <code>..</code> under <code>projects/</code> and <code>general/</code>, and <code>.</code> at the root.</li>
+      <li data-lang="zh"><strong>登记导航：</strong>在 <code>assets/js/site.js</code> 的 <code>NAV</code> 数组中按分组添加一个条目（中文与英文标题），侧边栏与上下页导航会自动生成。</li>
+      <li data-lang="en"><strong>Register navigation:</strong> add an entry with Chinese and English titles to the <code>NAV</code> array in <code>assets/js/site.js</code>; the sidebar and previous/next pager update automatically.</li>
+      <li data-lang="zh"><strong>更新首页：</strong>如需在首页目录中出现，在 <code>docs/index.html</code> 的对应分区添加一张 <code>.card</code>。</li>
+      <li data-lang="en"><strong>Update the home page:</strong> to list the page in the catalog, add a <code>.card</code> to the relevant section of <code>docs/index.html</code>.</li>
+    </ol>
+
+    <p data-lang="zh">最小页面骨架：</p>
+    <p data-lang="en">Minimal page skeleton:</p>
+
+<pre data-file="new-page.html">&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN" data-lang="zh" data-theme="light"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title data-zh="页面标题 · XG STUDIO 文档" data-en="Page title · XG STUDIO Documentation"&gt;页面标题&lt;/title&gt;
+  &lt;link rel="stylesheet" href="../assets/css/site.css"&gt;
+&lt;/head&gt;
+&lt;body data-root=".."&gt;
+  &lt;header id="site-header" class="site-header"&gt;&lt;/header&gt;
+  &lt;div class="layout"&gt;
+    &lt;aside id="site-sidebar" class="sidebar"&gt;&lt;/aside&gt;
+    &lt;main id="main" class="doc"&gt;
+      &lt;h1&gt;...&lt;/h1&gt;
+      &lt;nav id="pager" class="pager"&gt;&lt;/nav&gt;
+      &lt;div id="edit-row" class="edit-row"&gt;&lt;/div&gt;
+    &lt;/main&gt;
+  &lt;/div&gt;
+  &lt;footer id="site-footer" class="site-footer"&gt;&lt;/footer&gt;
+  &lt;script src="../assets/js/site.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+    <h2 id="bilingual"><span data-lang="zh">双语约定</span><span data-lang="en">Bilingual conventions</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>正文：</strong>每段中文用 <code>&lt;p data-lang="zh"&gt;</code>，英文用 <code>&lt;p data-lang="en"&gt;</code>；表格单元格与短标签用同一属性的 <code>&lt;span&gt;</code> 包裹。切换语言时 CSS 会隐藏另一侧。</li>
+      <li data-lang="en"><strong>Body text:</strong> wrap Chinese in <code>&lt;p data-lang="zh"&gt;</code> and English in <code>&lt;p data-lang="en"&gt;</code>; table cells and short labels use <code>&lt;span&gt;</code> with the same attribute. CSS hides the other side when switching.</li>
+      <li data-lang="zh"><strong>页面标题：</strong><code>&lt;title&gt;</code> 同时提供 <code>data-zh</code> 与 <code>data-en</code>，脚本按当前语言更新浏览器标签标题。</li>
+      <li data-lang="en"><strong>Page title:</strong> supply both <code>data-zh</code> and <code>data-en</code> on <code>&lt;title&gt;</code>; the script updates the tab title with the active language.</li>
+      <li data-lang="zh"><strong>代码：</strong>代码与标识符不翻译，注释可按语言保留一份通用英文注释，避免两套代码块。</li>
+      <li data-lang="en"><strong>Code:</strong> never translate code or identifiers; keep comments in English so a single block serves both languages.</li>
+      <li data-lang="zh"><strong>翻译来源：</strong>上游 README 仅提供中文时（如 XGStudio-cpp-UI、XGStudio-cpp-Core），英文内容由本仓库翻译整理，并在页面注明；出现分歧以上游仓库为准。</li>
+      <li data-lang="en"><strong>Translation source:</strong> when the upstream README is Chinese-only (for example XGStudio-cpp-UI and XGStudio-cpp-Core), the English text is translated and maintained here with a note on the page; where wording differs, the upstream repository wins.</li>
+    </ul>
+
+    <h2 id="publish"><span data-lang="zh">发布</span><span data-lang="en">Publishing</span></h2>
+    <p data-lang="zh">站点由 GitHub Pages 从 <code>main</code> 分支的 <code>/docs</code> 目录直接发布，仓库设置中已启用。提交到 <code>main</code> 后约 1 分钟内生效，地址为：</p>
+    <p data-lang="en">GitHub Pages publishes directly from the <code>/docs</code> folder on <code>main</code>, already enabled in the repository settings. Changes go live within roughly a minute of pushing to <code>main</code>, at:</p>
+    <p><a href="https://xg-cyhilu.github.io/XG-STUDIO-DOCS/" target="_blank" rel="noopener">https://xg-cyhilu.github.io/XG-STUDIO-DOCS/</a></p>
+
+    <p data-lang="zh">发布注意事项：</p>
+    <p data-lang="en">Publishing notes:</p>
+    <ul>
+      <li data-lang="zh"><code>.nojekyll</code> 必须保留，否则以 <code>_</code> 开头的文件与目录会被 Jekyll 忽略。</li>
+      <li data-lang="en">Keep <code>.nojekyll</code>: without it Jekyll ignores files and folders starting with <code>_</code>.</li>
+      <li data-lang="zh">页面链接使用带 <code>.html</code> 的相对路径，不要依赖无扩展名的“干净 URL”，静态托管不会自动补全。</li>
+      <li data-lang="en">Use relative links that include <code>.html</code>; extension-less "clean URLs" are not resolved by static hosting.</li>
+      <li data-lang="zh">每页底部的“在 GitHub 上编辑此页”链接按当前路径自动生成，移动文件后无需手工维护。</li>
+      <li data-lang="en">The "Edit this page" link at the bottom of each page is generated from the current path, so moving files needs no manual upkeep.</li>
+      <li data-lang="zh">发布后如页面仍显示旧内容，多为浏览器或 Pages CDN 缓存，可在链接后追加查询参数强制刷新。</li>
+      <li data-lang="en">If an updated page still shows old content, it is usually browser or Pages CDN caching; append a query parameter to force a refresh.</li>
+    </ul>
+
+    <h2 id="contributing"><span data-lang="zh">参与贡献</span><span data-lang="en">Contributing</span></h2>
+    <p data-lang="zh">文档改进通过 Issue 与 Pull Request 提交：先在 Issue 中说明问题页面与具体错误，再提交 PR 修改；涉及接口、版本号与许可的改动需引用上游仓库的依据。</p>
+    <p data-lang="en">Documentation improvements go through issues and pull requests: describe the affected page and the specific error in an issue, then submit a PR. Changes to interfaces, version numbers or licensing must cite the upstream repository as evidence.</p>
+    <p data-lang="zh">写作要求：术语与各项目 README 保持一致（例如 <code>vcui</code>、<code>cpploclib</code> 等代码侧标识符不意译）；英文使用句式大小写（sentence case），不做全大写强调；一个 PR 只解决一类问题。</p>
+    <p data-lang="en">Writing requirements: keep terminology aligned with each project's README (code-level identifiers such as <code>vcui</code> and <code>cpploclib</code> are not translated); use sentence case in English rather than all-caps emphasis; keep each PR focused on one kind of change.</p>
+    <ul>
+      <li><a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/issues" target="_blank" rel="noopener"><span data-lang="zh">问题反馈（Issues）</span><span data-lang="en">Issue tracker</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/pulls" target="_blank" rel="noopener"><span data-lang="zh">提交 Pull Request</span><span data-lang="en">Submit a pull request</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-Core · XG STUDIO 文档" data-en="XGStudio-cpp-Core · XG STUDIO Documentation">XGStudio-cpp-Core · XG STUDIO 文档</title>
+<meta name="description" content="XGStudio-cpp-Core 使用说明：13 个可独立取用的 C++17 基础模块（下载、日志、进程、加密、压缩、配置、线程、网络、桌面壳与崩溃转储）。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-root="..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-Core</span>
+    </p>
+
+    <h1>XGStudio-cpp-Core</h1>
+    <p class="sub" data-lang="zh">XGstudio 的 C++ 公共组件聚合库，版本 1.0.0，Apache-2.0 许可。</p>
+    <p class="sub" data-lang="en">XGstudio's aggregate of reusable C++ component libraries. Version 1.0.0, Apache-2.0.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17</span>
+      <span class="chip">CMake</span>
+      <span class="chip">MSVC / x64</span>
+      <span class="chip">vcpkg</span>
+      <span class="chip">v1.0.0</span>
+      <span class="chip">Apache-2.0</span>
+    </div>
+
+    <p data-lang="zh">
+      每个子目录都是一个可以单独拿走、单独构建的库，共享同一套 Apache-2.0 许可与构建约定：
+      C++17、MSVC <code>/utf-8</code>、UTF-8 BOM 源码、CMake <code>find_package</code> 导出。
+      模块之间互不依赖，既服务于 Void Craft Launcher 生态，也能直接用于任何 Windows C++17 工程。
+    </p>
+    <p data-lang="en">
+      Each subdirectory is a self-contained library that can be taken and built on its own. All of them
+      share one set of conventions: Apache-2.0 licensing, C++17, MSVC <code>/utf-8</code>, UTF-8 BOM
+      sources and CMake <code>find_package</code> exports. Modules do not depend on one another, so they
+      serve the Void Craft Launcher ecosystem and any other Windows C++17 project alike.
+    </p>
+    <div class="note">
+      <p data-lang="zh"><strong>本地目录名：</strong>仓库在本地仍位于 <code>cpploclib</code>，因此 CMake 开关统一使用 <code>CPPLOCLIB_BUILD_*</code> 前缀。上游仓库名为 <code>XGStudio-cpp-Core</code>。</p>
+      <p data-lang="en"><strong>Local directory name:</strong> the repository still lives under <code>cpploclib</code> locally, so CMake options keep the <code>CPPLOCLIB_BUILD_*</code> prefix. The upstream repository is <code>XGStudio-cpp-Core</code>.</p>
+    </div>
+
+    <h2 id="modules"><span data-lang="zh">模块</span><span data-lang="en">Modules</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">目录</span><span data-lang="en">Directory</span></th>
+          <th><span data-lang="zh">库</span><span data-lang="en">Library</span></th>
+          <th><span data-lang="zh">CMake 目标</span><span data-lang="en">CMake target</span></th>
+          <th><span data-lang="zh">说明</span><span data-lang="en">Summary</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>modDownload</code></td><td>XGDL</td><td><code>XGDL::xgdl</code></td><td><span data-lang="zh">基于 libcurl <code>CURLM</code> 多路复用与大小文件分离线程池的下载库：分块 Range、镜像回退、<code>.part</code> 断点续传、MD5/SHA 校验、进度轮询与 UI 事件。</span><span data-lang="en">Download library built on libcurl <code>CURLM</code> multiplexing and a size-split thread pool: range chunks, mirror fallback, <code>.part</code> resume, MD5/SHA verification, progress polling and UI events.</span></td></tr>
+          <tr><td><code>modLog</code></td><td>XGLOG</td><td><code>XGLOG::xglog</code></td><td><span data-lang="zh">异步日志：固定内存环形队列、队列满即丢并计数、分级过滤、文件轮转、控制台着色与 UI 拉取。</span><span data-lang="en">Asynchronous logging: fixed-size ring buffer, drop-and-count on overflow, level filtering, file rotation, coloured console output and UI polling.</span></td></tr>
+          <tr><td><code>modProc</code></td><td>XGPROC</td><td><code>XGPROC::xgproc</code></td><td><span data-lang="zh">通用子进程：Job 对象托管整棵进程树、stdout/stderr 按行回收、stdin 写入、超时与退出码、OEM/UTF-8 自动转码。</span><span data-lang="en">Child processes: Job objects own the whole process tree, line-based stdout/stderr capture, stdin writing, timeouts, exit codes and OEM/UTF-8 transcoding.</span></td></tr>
+          <tr><td><code>modCrypto</code></td><td>XGCRYPTO</td><td><code>XGCRYPTO::xgcrypto</code></td><td><span data-lang="zh">摘要计算：MD5/SHA1/SHA256/SHA384/SHA512 的增量与一次性接口、文件哈希、定长比较（CNG 实现）。</span><span data-lang="en">Digests: incremental and one-shot MD5/SHA1/SHA256/SHA384/SHA512, file hashing and constant-time comparison, implemented over CNG.</span></td></tr>
+          <tr><td><code>modZip</code></td><td>XGZIP</td><td><code>XGZIP::xgzip</code></td><td><span data-lang="zh">zip 读取、解压与写入：中央目录 / ZIP64 解析、自带 inflate、filter 过滤、CRC 校验、路径穿越防护、原子进度；写入端支持 store 与 deflate。</span><span data-lang="en">Zip reading, extraction and writing: central directory / ZIP64 parsing, built-in inflate, filtering, CRC checks, path-traversal protection, atomic progress; store and deflate on write.</span></td></tr>
+          <tr><td><code>modFs</code></td><td>XGFS</td><td><code>XGFS::xgfs</code></td><td><span data-lang="zh">文件与路径：规范化与拆分、原子写、临时文件、递归遍历（通配过滤）、复制 / 移动 / 安全删除。</span><span data-lang="en">Files and paths: normalisation and splitting, atomic writes, temp files, recursive traversal with wildcard filters, copy / move / safe delete.</span></td></tr>
+          <tr><td><code>modCfg</code></td><td>XGCFG</td><td><code>XGCFG::xgcfg</code></td><td><span data-lang="zh">JSON 值树与配置文件：宽松解析（注释、尾逗号）、插入顺序、点路径读写、默认值、原子保存、mtime 重载、变更回调、深合并与结构体绑定。</span><span data-lang="en">JSON value trees and config files: lenient parsing (comments, trailing commas), insertion order, dot-path access, defaults, atomic saves, mtime reload, change callbacks, deep merge and struct binding.</span></td></tr>
+          <tr><td><code>modThread</code></td><td>XGTHREAD</td><td><code>XGTHREAD::xgthread</code></td><td><span data-lang="zh">线程池（future / fire-and-forget / <code>WaitIdle</code>）与主线程调度队列（任意线程 Post、拥有者线程 RunPending）。</span><span data-lang="en">Thread pool (futures, fire-and-forget, <code>WaitIdle</code>) plus a main-thread dispatch queue (post from any thread, drain on the owner thread).</span></td></tr>
+          <tr><td><code>modNet</code></td><td>XGNET</td><td><code>XGNET::xgnet</code></td><td><span data-lang="zh">同步 HTTP 客户端（libcurl easy + 连接复用）：请求头 / 体、重定向、超时、代理（含系统代理探测）、响应头、内置 gunzip、URL 编解码与 cookie jar。</span><span data-lang="en">Synchronous HTTP client (libcurl easy with connection reuse): headers and bodies, redirects, timeouts, proxies including system-proxy detection, response headers, built-in gunzip, URL encoding and a cookie jar.</span></td></tr>
+          <tr><td><code>modSecure</code></td><td>XGSECURE</td><td><code>XGSECURE::xgsecure</code></td><td><span data-lang="zh">编解码与密钥材料（CNG）：Base64 / Base64Url、密码学随机、HMAC-SHA256、AES-256-GCM 密封、PBKDF2-HMAC-SHA256。</span><span data-lang="en">Encoding and key material over CNG: Base64 / Base64Url, cryptographic randomness, HMAC-SHA256, AES-256-GCM sealing and PBKDF2-HMAC-SHA256.</span></td></tr>
+          <tr><td><code>modShell</code></td><td>XGSHELL</td><td><code>XGSHELL::xgshell</code></td><td><span data-lang="zh">Windows 桌面壳集成：单实例互斥、协议 / 文件关联、快捷方式、开机自启、托盘、已知文件夹、资源管理器动作与提权重启。</span><span data-lang="en">Windows shell integration: single-instance mutex, protocol/file associations, shortcuts, run-at-login, tray icon, known folders, Explorer verbs and elevated relaunch.</span></td></tr>
+          <tr><td><code>modCrash</code></td><td>XGCRASH</td><td><code>XGCRASH::xgcrash</code></td><td><span data-lang="zh">崩溃转储：SEH / <code>std::terminate</code> / 可选 VEH 三路汇入 <code>MiniDumpWriteDump</code>，固定目录、保留最近 N 个、写完回调。</span><span data-lang="en">Crash dumps: SEH, <code>std::terminate</code> and optional VEH all route to <code>MiniDumpWriteDump</code>, with a fixed directory, retention of the newest N dumps and a completion callback.</span></td></tr>
+          <tr><td><code>modCore</code></td><td>XGCORE</td><td><code>XGCORE::xgcore</code></td><td><span data-lang="zh">聚合头 <code>&lt;xgcore/xgcore.h&gt;</code>（<code>__has_include</code> 收拢已构建模块）以及运行期版本、构建时间与已编译模块清单。</span><span data-lang="en">Aggregate header <code>&lt;xgcore/xgcore.h&gt;</code> (<code>__has_include</code>-based) plus runtime version, build time and the list of compiled-in modules.</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">后续模块在 <code>README</code> 的表格中登记。</p>
+    <p data-lang="en">New modules are registered in the README table.</p>
+
+    <h2 id="build"><span data-lang="zh">构建</span><span data-lang="en">Build</span></h2>
+    <p data-lang="zh">依赖统一通过 vcpkg 提供（<code>vcpkg.json</code> 已声明），或按各模块 README 自行准备静态依赖。XGDL 所需的静态 libcurl 必须启用 <code>schannel</code>，不需要 OpenSSL / nghttp2 / zlib。</p>
+    <p data-lang="en">Dependencies come from vcpkg (<code>vcpkg.json</code> is included), or can be prepared per module README. The static libcurl required by XGDL must be built with <code>schannel</code>; OpenSSL, nghttp2 and zlib are not needed.</p>
+
+<pre data-file="PowerShell">vcpkg install --triplet x64-windows-static
+cmake -S . -B .build -G "Visual Studio 17 2022" -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE=&lt;vcpkg&gt;/scripts/buildsystems/vcpkg.cmake `
+  -DVCPKG_TARGET_TRIPLET=x64-windows-static
+cmake --build .build --config Release</pre>
+
+    <h2 id="integration"><span data-lang="zh">集成</span><span data-lang="en">Integration</span></h2>
+
+<pre data-file="CMakeLists.txt">add_subdirectory(third_party/cpploclib)
+target_link_libraries(YourApp PRIVATE XGDL::xgdl XGLOG::xglog XGPROC::xgproc
+                                        XGCRYPTO::xgcrypto XGSECURE::xgsecure XGZIP::xgzip
+                                        XGFS::xgfs XGCFG::xgcfg XGTHREAD::xgthread XGNET::xgnet
+                                        XGSHELL::xgshell XGCRASH::xgcrash XGCORE::xgcore)</pre>
+
+    <p data-lang="zh">只链接 <code>XGCORE::xgcore</code> 也能获得全部已构建模块的头文件目录（它 PUBLIC 链接这些模块），适合不想逐个列出的工程；但聚合头出错时编译代价是全量的，日常仍建议按需逐个链接。</p>
+    <p data-lang="en">Linking only <code>XGCORE::xgcore</code> still brings in every built module's include directories (it links them PUBLIC), which suits projects that would rather not list them. The trade-off is that an error in the aggregate header costs a full rebuild, so per-module linking remains the default recommendation.</p>
+
+    <p data-lang="zh">可以按需关闭模块，例如 <code>-DCPPLOCLIB_BUILD_LOG=OFF</code>、<code>-DCPPLOCLIB_BUILD_ZIP=OFF</code>；共 13 个开关，命名与模块一一对应（<code>DOWNLOAD</code>、<code>LOG</code>、<code>PROC</code>、<code>CRYPTO</code>、<code>SECURE</code>、<code>ZIP</code>、<code>FS</code>、<code>CFG</code>、<code>THREAD</code>、<code>NET</code>、<code>SHELL</code>、<code>CRASH</code>、<code>CORE</code>）。也可以只添加单个模块目录：<code>add_subdirectory(third_party/cpploclib/modSecure)</code>。</p>
+    <p data-lang="en">Modules can be switched off individually, e.g. <code>-DCPPLOCLIB_BUILD_LOG=OFF</code> or <code>-DCPPLOCLIB_BUILD_ZIP=OFF</code>; there are 13 options, one per module (<code>DOWNLOAD</code>, <code>LOG</code>, <code>PROC</code>, <code>CRYPTO</code>, <code>SECURE</code>, <code>ZIP</code>, <code>FS</code>, <code>CFG</code>, <code>THREAD</code>, <code>NET</code>, <code>SHELL</code>, <code>CRASH</code>, <code>CORE</code>). Adding a single directory works too: <code>add_subdirectory(third_party/cpploclib/modSecure)</code>.</p>
+
+    <h2 id="tests"><span data-lang="zh">测试与持续集成</span><span data-lang="en">Tests and CI</span></h2>
+
+<pre data-file="PowerShell">cmake -S . -B .build -DCPPLOCLIB_BUILD_TESTS=ON
+cmake --build .build --config Release
+ctest --test-dir .build -C Release --output-on-failure</pre>
+
+    <p data-lang="zh">每个模块对应一条 ctest（<code>tests/&lt;模块&gt;/main.cpp</code>，使用自带微型断言，不引入 gtest），共 13 条用例，覆盖配置宽松解析与绑定、原子写、日志分级与落盘、标准哈希向量、AES-GCM 篡改检测、线程池、zip 往返与路径穿越、命令行引用往返、进程输出捕获、真实 dump 落盘、HTTP 回环请求与聚合头单 TU 编译等。全部用例不出网，可在无外网 CI 上稳定运行。</p>
+    <p data-lang="en">Each module has one ctest entry (<code>tests/&lt;module&gt;/main.cpp</code> using built-in micro-assertions, no gtest), 13 cases in total, covering lenient parsing and binding, atomic writes, log levels and flushing, standard hash vectors, AES-GCM tamper detection, the thread pool, zip round-trips and path traversal, command-line quoting, process output capture, real dump writing, loopback HTTP and single-TU compilation of the aggregate header. No test reaches the network, so they run reliably on offline CI.</p>
+
+    <p data-lang="zh">CI 工作流为 <code>.github/workflows/windows.yml</code>：在 <code>windows-latest</code> 上执行 configure → build → <code>ctest</code>，任一用例失败即判红，整轮约 50 秒。CI 刻意不包含 XGDL 与 XGNET：两者都需要一份静态 libcurl，而 vcpkg 的 curl CMake 包在接口中带有 <code>$&lt;LINK_ONLY:...&gt;</code> 依赖，会让 <code>install(EXPORT)</code> 在 CMake 4.x 下报非法上下文。它们的回归在本地完成（<code>xgdl_demo --selfcheck</code> 自带回环服务）。</p>
+    <p data-lang="en">The workflow <code>.github/workflows/windows.yml</code> runs configure → build → <code>ctest</code> on <code>windows-latest</code>; any failing case turns the build red, and a full round takes about 50 seconds. XGDL and XGNET are deliberately excluded from CI: both need a static libcurl, and vcpkg's curl CMake package exposes <code>$&lt;LINK_ONLY:...&gt;</code> dependencies that make <code>install(EXPORT)</code> fail as an invalid context under CMake 4.x. Their regression tests run locally via <code>xgdl_demo --selfcheck</code>, which ships its own loopback server.</p>
+
+    <h2 id="license"><span data-lang="zh">许可证</span><span data-lang="en">License</span></h2>
+    <p data-lang="zh">Apache License 2.0，全文见仓库内 <code>LICENSE</code>；每个源文件头部均带 SPDX 标识。</p>
+    <p data-lang="en">Apache License 2.0; the full text is in the repository's <code>LICENSE</code>, and every source file carries an SPDX identifier.</p>
+
+    <h2 id="links"><span data-lang="zh">延伸阅读</span><span data-lang="en">Further reading</span></h2>
+    <ul>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-Core" target="_blank" rel="noopener"><span data-lang="zh">源码仓库与完整 README</span><span data-lang="en">Source repository and full README</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-Core/blob/main/CHANGELOG.md" target="_blank" rel="noopener"><span data-lang="zh">CHANGELOG</span><span data-lang="en">CHANGELOG</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-Core/blob/main/LICENSE" target="_blank" rel="noopener"><span data-lang="zh">LICENSE 全文</span><span data-lang="en">Full LICENSE text</span></a></li>
+      <li><a href="void-craft-launcher.html"><span data-lang="zh">Void Craft Launcher：本库的主要使用方</span><span data-lang="en">Void Craft Launcher: the primary consumer</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

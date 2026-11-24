@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-zh="XGStudio-cpp-UI · XG STUDIO 文档" data-en="XGStudio-cpp-UI · XG STUDIO Documentation">XGStudio-cpp-UI · XG STUDIO 文档</title>
+<meta name="description" content="XGStudio-cpp-UI 使用说明：C++17 / Direct2D 全自绘控件库，17 个控件、Fluent 2 主题体系、输入法支持与构建集成方式。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body data-root="..">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
+
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
+
+  <main id="main" class="doc">
+    <p class="breadcrumb">
+      <a href="../index.html"><span data-lang="zh">文档</span><span data-lang="en">Docs</span></a>
+      <span class="sep">/</span>
+      <span data-lang="zh">项目文档</span><span data-lang="en">Projects</span>
+      <span class="sep">/</span>
+      <span>XGStudio-cpp-UI</span>
+    </p>
+
+    <h1>XGStudio-cpp-UI</h1>
+    <p class="sub" data-lang="zh">C++17 与 Direct2D 实现的 Windows 全自绘控件库，版本 1.0.0，Apache-2.0 许可。</p>
+    <p class="sub" data-lang="en">A fully self-drawn Windows control library built on C++17 and Direct2D. Version 1.0.0, Apache-2.0.</p>
+    <div class="doc-meta">
+      <span class="chip">C++17</span>
+      <span class="chip">Direct2D 1.0</span>
+      <span class="chip">DirectWrite</span>
+      <span class="chip">Win32</span>
+      <span class="chip">v1.0.0</span>
+      <span class="chip">Apache-2.0</span>
+    </div>
+
+    <p data-lang="zh">
+      窗口里没有任何系统控件——没有 <code>EDIT</code>、<code>COMBOBOX</code>、<code>BUTTON</code>，
+      每一个像素都由 <code>vcui::Gfx</code> 用 Direct2D 绘制。库以单一 Fluent 2 底座组织视觉：
+      尺寸走 <code>Metrics</code>、颜色走 <code>Token</code>、字号走 type ramp，
+      提供浅色 / 深色两档 × Microsoft / GitHub 两套色板。
+    </p>
+    <p data-lang="en">
+      The library hosts no system controls at all — no <code>EDIT</code>, <code>COMBOBOX</code> or
+      <code>BUTTON</code>; every pixel is drawn by <code>vcui::Gfx</code> through Direct2D. A single
+      Fluent 2 foundation governs the visuals: sizing through <code>Metrics</code>, colour through
+      <code>Token</code>, and typography through the official type ramp, with light/dark variants
+      across two palettes (Microsoft and GitHub).
+    </p>
+
+    <div class="note">
+      <p data-lang="zh"><strong>命名约定：</strong>项目对外名称为 <strong>XGStudio-cpp-UI</strong>（仓库、文档、示例标题均使用它），代码侧标识符仍为 <code>vcui</code>：命名空间 <code>vcui</code>、CMake 目标 <code>VCUI::vcui</code>、产物 <code>vcui.lib</code>、宏 <code>VCUI_*</code>。这样改名不会打断已链接该库的工程，<code>find_package(VCUI)</code> 照旧可用。</p>
+      <p data-lang="en"><strong>Naming:</strong> the public product name is <strong>XGStudio-cpp-UI</strong> (used by the repository, documentation and demo titles), while code-level identifiers remain <code>vcui</code>: namespace <code>vcui</code>, CMake target <code>VCUI::vcui</code>, artifact <code>vcui.lib</code>, macros <code>VCUI_*</code>. Renaming therefore does not break existing consumers, and <code>find_package(VCUI)</code> keeps working.</p>
+    </div>
+
+    <div class="shots">
+      <figure>
+        <a href="../assets/img/vcui-light.png" target="_blank" rel="noopener"><img src="../assets/img/vcui-light.png" alt="VCUI light theme screenshot" loading="lazy"></a>
+        <figcaption><span data-lang="zh">浅色 · 控件页（输入类）</span><span data-lang="en">Light · controls page (inputs)</span></figcaption>
+      </figure>
+      <figure>
+        <a href="../assets/img/vcui-dark.png" target="_blank" rel="noopener"><img src="../assets/img/vcui-dark.png" alt="VCUI dark theme screenshot" loading="lazy"></a>
+        <figcaption><span data-lang="zh">深色 · 同一页、同一组控件</span><span data-lang="en">Dark · same page, same controls</span></figcaption>
+      </figure>
+    </div>
+    <p class="sub" data-lang="zh" style="margin-top:-8px">截图来自仓库内的 <code>VCUIFrameDemo</code> 展示程序，并非设计稿。</p>
+    <p class="sub" data-lang="en" style="margin-top:-8px">Screenshots come from the in-repository <code>VCUIFrameDemo</code> demo, not design mockups.</p>
+
+    <h2 id="features"><span data-lang="zh">核心特性</span><span data-lang="en">Key characteristics</span></h2>
+    <ul>
+      <li data-lang="zh"><strong>真正的全自绘：</strong>光标、选区、滚动、下拉弹层、滑块手柄、开关滑块、导航指示条、阴影与圆角描边全部由 <code>Gfx</code> 绘制，没有 <code>CreateWindowEx</code> 子窗口，也不混用 Owner-Draw。</li>
+      <li data-lang="en"><strong>Genuinely self-drawn:</strong> carets, selections, scrolling, dropdown popups, slider thumbs, switch knobs, navigation indicators, shadows and rounded strokes are all painted by <code>Gfx</code>; there are no <code>CreateWindowEx</code> child windows and no owner-draw hybrids.</li>
+      <li data-lang="zh"><strong>完整接管输入法：</strong><code>Input</code> 处理 <code>WM_IME_*</code> 消息，用 <code>ImmSetCompositionWindow</code> 定位组合串、<code>ImmSetCandidateWindow</code> 定位候选窗，组合串带下划线渲染，光标随组合推进。</li>
+      <li data-lang="en"><strong>Full IME integration:</strong> <code>Input</code> handles <code>WM_IME_*</code> messages, positions the composition string with <code>ImmSetCompositionWindow</code> and the candidate window with <code>ImmSetCandidateWindow</code>; composition text is underlined and the caret advances with it.</li>
+      <li data-lang="zh"><strong>只依赖 Direct2D 1.0：</strong>使用 <code>ID2D1BitmapRenderTarget</code> 持久离屏层，阴影为 4 层缩放的圆角位图叠加（带缓存），不需要 <code>ID2D1Effect</code>、D3D11 设备、Acrylic 或 Mica。</li>
+      <li data-lang="en"><strong>Direct2D 1.0 only:</strong> a persistent off-screen layer on <code>ID2D1BitmapRenderTarget</code>; shadows use four scaled rounded-rect bitmaps with caching. No <code>ID2D1Effect</code>, no D3D11 device, no Acrylic or Mica.</li>
+      <li data-lang="zh"><strong>完整键盘导航：</strong><code>Tab</code>、<code>Space</code>、方向键、<code>F4</code>、<code>Esc</code> 在所有控件上接通；焦点环按 Fluent 的 focus-visible 规则仅由键盘操作触发。</li>
+      <li data-lang="en"><strong>Complete keyboard navigation:</strong> <code>Tab</code>, <code>Space</code>, arrow keys, <code>F4</code> and <code>Esc</code> work across all controls; the focus ring follows Fluent's focus-visible rule and appears only for keyboard interaction.</li>
+      <li data-lang="zh"><strong>闲置不耗 CPU：</strong>有动画时跟随 <code>DwmFlush</code> 合成节拍，无动画时挂起等待消息，实测空闲帧增量为 0、CPU 占用 0%。</li>
+      <li data-lang="en"><strong>No idle CPU cost:</strong> the frame loop follows the <code>DwmFlush</code> composition cadence while animating and suspends to the message queue when idle; measured idle frame growth is zero and CPU usage is 0%.</li>
+      <li data-lang="zh"><strong>便于单文件分发：</strong>默认为静态库；开启 <code>VCUI_STATIC_RUNTIME=ON</code> 后连 MSVC 运行时一并静态链接。</li>
+      <li data-lang="en"><strong>Single-file distribution:</strong> static library by default; with <code>VCUI_STATIC_RUNTIME=ON</code> the MSVC runtime is linked statically as well.</li>
+    </ul>
+
+    <h2 id="usage"><span data-lang="zh">快速开始</span><span data-lang="en">Getting started</span></h2>
+    <p data-lang="zh"><code>CreateAppWindow</code> 封装了 DPI 感知、自绘边框、库自带标题栏（系统按钮与拖动）以及消息循环：</p>
+    <p data-lang="en"><code>CreateAppWindow</code> wraps DPI awareness, the custom frame, the built-in title bar (system buttons and dragging) and the message loop:</p>
+
+<pre data-file="main.cpp">#include &lt;windows.h&gt;
+#include &lt;vcui/vcui.h&gt;
+
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
+    return vcui::CreateAppWindow(L"My App", 960, 640, [](vcui::Widget&amp; body) {
+        auto page = vcui::VBox(14.f);
+        page-&gt;Pad(24.f);
+        page-&gt;Add(std::make_shared&lt;vcui::Label&gt;(L"Hello", 20.f, 600));
+
+        auto card = std::make_shared&lt;vcui::Card&gt;();
+        card-&gt;Add(std::make_shared&lt;vcui::Input&gt;(L"Type something..."));
+        card-&gt;Add(std::make_shared&lt;vcui::Button&gt;(L"OK", true));
+
+        page-&gt;Add(card);
+        body.Add(page);
+    });
+}</pre>
+
+    <p data-lang="zh">需要深色、切换色板、自定义强调色或去掉库标题栏时，改用结构体版本：</p>
+    <p data-lang="en">For dark mode, a different palette, a custom accent colour or no built-in title bar, use the options struct:</p>
+
+<pre data-file="AppOptions">vcui::AppOptions o;
+o.Title  = L"Settings";
+o.Width  = 900;  o.Height = 620;
+o.Dark   = true;
+o.Pal    = vcui::Palette::GitHub;
+o.Accent = vcui::Hex(0x7C4DFF);
+o.TitleBar = false;      // build your own title bar
+o.BodyPad  = 20.f;
+o.Build    = [](vcui::Widget&amp; body) { /* ... */ };
+return vcui::CreateAppWindow(o);</pre>
+
+    <p data-lang="zh">入口不命名为 <code>CreateWindow</code>，因为 <code>&lt;windows.h&gt;</code> 会将其宏定义为 <code>CreateWindowW</code>。</p>
+    <p data-lang="en">The entry point is deliberately not named <code>CreateWindow</code>: <code>&lt;windows.h&gt;</code> macro-defines that identifier to <code>CreateWindowW</code>.</p>
+
+    <h2 id="controls"><span data-lang="zh">控件</span><span data-lang="en">Controls</span></h2>
+    <p data-lang="zh"><code>include/vcui/Controls.h</code> 共提供 17 个控件，全部自绘并共享同一套 Token 与 Metrics。</p>
+    <p data-lang="en"><code>include/vcui/Controls.h</code> provides 17 controls, all self-drawn and sharing the same Token and Metrics system.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">控件</span><span data-lang="en">Control</span></th>
+          <th><span data-lang="zh">说明</span><span data-lang="en">Description</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>Label</code></td><td><span data-lang="zh">文本；支持真换行、超宽省略与 type ramp。</span><span data-lang="en">Text with real wrapping, ellipsis and type-ramp sizing.</span></td></tr>
+          <tr><td><code>Button</code></td><td><span data-lang="zh">主 / 次按钮，可选 Segoe MDL2 字形与危险态。</span><span data-lang="en">Primary/secondary button with optional Segoe MDL2 glyph and danger state.</span></td></tr>
+          <tr><td><code>IconButton</code></td><td><span data-lang="zh">图标按钮，<code>Ghost</code> 模式无底色。</span><span data-lang="en">Icon button; <code>Ghost</code> mode has no fill until hover.</span></td></tr>
+          <tr><td><code>Checkbox</code></td><td><span data-lang="zh">复选框，<code>Changed(bool)</code> 回调。</span><span data-lang="en">Checkbox with a <code>Changed(bool)</code> callback.</span></td></tr>
+          <tr><td><code>Switch</code></td><td><span data-lang="zh">开关，滑块位置带缓动。</span><span data-lang="en">Toggle switch with eased knob movement.</span></td></tr>
+          <tr><td><code>Input</code></td><td><span data-lang="zh">文本输入，含光标、选区与输入法组合串。</span><span data-lang="en">Text input with caret, selection and IME composition.</span></td></tr>
+          <tr><td><code>Slider</code></td><td><span data-lang="zh">0..1 滑块，点轨道即吸附，键盘可步进。</span><span data-lang="en">0..1 slider; clicking the track snaps, keyboard steps supported.</span></td></tr>
+          <tr><td><code>Progress</code></td><td><span data-lang="zh">进度条；<code>Indeterminate</code> 切不确定态。</span><span data-lang="en">Progress bar; <code>Indeterminate</code> switches to the looping state.</span></td></tr>
+          <tr><td><code>Segmented</code></td><td><span data-lang="zh">分段选择，选中胶囊在段间滑动。</span><span data-lang="en">Segmented selector with a sliding pill.</span></td></tr>
+          <tr><td><code>Badge</code></td><td><span data-lang="zh">状态徽章：中性 / 强调 / 成功 / 警告 / 危险。</span><span data-lang="en">Status badge: neutral, accent, success, warning, danger.</span></td></tr>
+          <tr><td><code>NavItem</code></td><td><span data-lang="zh">导航项；同一父容器内自动构成单选组。</span><span data-lang="en">Navigation item; siblings in one parent form a radio group automatically.</span></td></tr>
+          <tr><td><code>ListRow</code></td><td><span data-lang="zh">列表行：标题、副标题、右侧值与选中态。</span><span data-lang="en">List row with title, subtitle, trailing value and selection.</span></td></tr>
+          <tr><td><code>Dropdown</code></td><td><span data-lang="zh">下拉框；菜单挂在 Overlay 层，可超出窗口边界。</span><span data-lang="en">Dropdown; the menu lives in the overlay layer and may extend past the window.</span></td></tr>
+          <tr><td><code>Tooltip</code></td><td><span data-lang="zh">悬停提示；设置 <code>Widget::Tooltip</code> 后 600ms 自动弹出。</span><span data-lang="en">Hover tooltip; set <code>Widget::Tooltip</code> and it appears after 600 ms.</span></td></tr>
+          <tr><td><code>InfoBar</code></td><td><span data-lang="zh">右上角提示条，堆叠、统一宽度、超宽省略。</span><span data-lang="en">Top-right info bar notifications: stacked, uniform width, ellipsised.</span></td></tr>
+          <tr><td><code>Dialog</code></td><td><span data-lang="zh">模态对话框：全屏遮罩加居中卡片。</span><span data-lang="en">Modal dialog: full-screen scrim with a centred card.</span></td></tr>
+          <tr><td><code>TitleBar</code></td><td><span data-lang="zh">自绘标题栏：系统按钮与可选的顶部导航。</span><span data-lang="en">Custom title bar with system buttons and optional navigation.</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img src="../assets/img/vcui-controls.png" alt="VCUI controls showcase" loading="lazy">
+      <figcaption><span data-lang="zh">控件展示（VCUIDemo）</span><span data-lang="en">Control showcase (VCUIDemo)</span></figcaption>
+    </figure>
+
+    <h2 id="theme"><span data-lang="zh">主题与排版</span><span data-lang="en">Theme and typography</span></h2>
+    <p data-lang="zh"><code>Theme</code> 由三部分构成：<code>pal</code>（色板）、<code>dark</code>（明暗）与 <code>accent</code>（强调色）；执行 <code>Refresh()</code> 后得到 <code>t</code>（Tokens）与 <code>m</code>（Metrics）。</p>
+    <p data-lang="en"><code>Theme</code> has three inputs — <code>pal</code> (palette), <code>dark</code> (mode) and <code>accent</code>; <code>Refresh()</code> derives <code>t</code> (Tokens) and <code>m</code> (Metrics).</p>
+
+<pre data-file="Theme">app.SetTheme(vcui::Palette::GitHub, /*dark=*/true);
+app.SetAccent(vcui::Hex(0xFF6A00));   // accentHover / accentPress / accentSoft / accentSel are derived</pre>
+
+    <p data-lang="zh">基础 Token 沿用历史命名的拼音缩写，下表为实际取值（Microsoft 与 GitHub 色板）：</p>
+    <p data-lang="en">Base tokens keep their historical pinyin abbreviations; actual values for both palettes:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Token</th>
+          <th><span data-lang="zh">语义</span><span data-lang="en">Meaning</span></th>
+          <th>MS <span data-lang="zh">浅</span><span data-lang="en">light</span></th>
+          <th>MS <span data-lang="zh">深</span><span data-lang="en">dark</span></th>
+          <th>GH <span data-lang="zh">浅</span><span data-lang="en">light</span></th>
+          <th>GH <span data-lang="zh">深</span><span data-lang="en">dark</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>kp</code></td><td><span data-lang="zh">卡面 / 控件底色</span><span data-lang="en">Key surface</span></td><td><code>fbfbfb</code></td><td><code>2b2b2b</code></td><td><code>ffffff</code></td><td><code>0c1117</code></td></tr>
+          <tr><td><code>bj</code></td><td><span data-lang="zh">页面背景</span><span data-lang="en">Page background</span></td><td><code>f3f3f3</code></td><td><code>202020</code></td><td><code>f5f8fa</code></td><td><code>000409</code></td></tr>
+          <tr><td><code>xt</code></td><td><span data-lang="zh">悬停填充</span><span data-lang="en">Hover fill</span></td><td><code>eaeaea</code></td><td><code>2d2d2d</code></td><td><code>f2f3f5</code></td><td><code>1e242a</code></td></tr>
+          <tr><td><code>wz</code></td><td><span data-lang="zh">主文字</span><span data-lang="en">Primary text</span></td><td><code>1b1b1b</code></td><td><code>f7f7f7</code></td><td><code>1e2328</code></td><td><code>eef6fc</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p data-lang="zh">派生 Token（<code>accentHover</code>、<code>accentPress</code>、<code>onAccent</code>、<code>accentSoft</code>、<code>accentSel</code>、<code>text2</code>、<code>text3</code>、<code>border</code>、<code>divider</code>、<code>pressed</code>、<code>panel</code>）随强调色与明暗自动计算，无需手工填写。</p>
+    <p data-lang="en">Derived tokens (<code>accentHover</code>, <code>accentPress</code>, <code>onAccent</code>, <code>accentSoft</code>, <code>accentSel</code>, <code>text2</code>, <code>text3</code>, <code>border</code>, <code>divider</code>, <code>pressed</code>, <code>panel</code>) are computed from the accent colour and mode; none are set by hand.</p>
+
+    <p data-lang="zh">字号不直接写数字，而是走官方 type ramp，每档自带字号、字重与行高：</p>
+    <p data-lang="en">Font sizes are not raw numbers but entries of the official type ramp, each carrying size, weight and line height:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">档位</span><span data-lang="en">Style</span></th>
+          <th><span data-lang="zh">字号 / 行高</span><span data-lang="en">Size / line height</span></th>
+          <th><span data-lang="zh">字重</span><span data-lang="en">Weight</span></th>
+          <th><span data-lang="zh">用途</span><span data-lang="en">Usage</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>Caption1</code></td><td>12 / 16</td><td>400</td><td><span data-lang="zh">辅助文字、表格副值</span><span data-lang="en">Secondary text, table sub-values</span></td></tr>
+          <tr><td><code>Body1</code></td><td>14 / 20</td><td>400</td><td><span data-lang="zh">正文、表单值</span><span data-lang="en">Body copy, form values</span></td></tr>
+          <tr><td><code>Subtitle1</code></td><td>20 / 26</td><td>600</td><td><span data-lang="zh">区块标题</span><span data-lang="en">Section headings</span></td></tr>
+          <tr><td><code>Title1</code></td><td>32 / 40</td><td>600</td><td><span data-lang="zh">页面主标题</span><span data-lang="en">Page titles</span></td></tr>
+          <tr><td><code>Display</code></td><td>68 / 92</td><td>600</td><td><span data-lang="zh">大屏头图</span><span data-lang="en">Hero display</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">非标准字号由 <code>TypeFor(px)</code> 兜底：落到最近一档并按比例缩放行高。</p>
+    <p data-lang="en">Non-standard sizes fall back through <code>TypeFor(px)</code>, which snaps to the nearest ramp entry and scales the line height proportionally.</p>
+
+    <h2 id="build"><span data-lang="zh">构建与集成</span><span data-lang="en">Build and integration</span></h2>
+
+<pre data-file="PowerShell">cmake -S . -B .build -G "Visual Studio 17 2022" -A x64
+cmake --build .build --config Release</pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">CMake 选项</span><span data-lang="en">CMake option</span></th>
+          <th><span data-lang="zh">默认</span><span data-lang="en">Default</span></th>
+          <th><span data-lang="zh">说明</span><span data-lang="en">Description</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><code>VCUI_BUILD_SHARED</code></td><td>OFF</td><td><span data-lang="zh">ON 时构建 DLL 与导入库</span><span data-lang="en">Build the DLL and import library</span></td></tr>
+          <tr><td><code>VCUI_BUILD_DEMO</code></td><td>ON</td><td><span data-lang="zh">构建示例程序</span><span data-lang="en">Build the demo executables</span></td></tr>
+          <tr><td><code>VCUI_STATIC_RUNTIME</code></td><td>OFF</td><td><span data-lang="zh">使用 <code>/MT</code>，静态链接 MSVC 运行时</span><span data-lang="en">Use <code>/MT</code> and link the MSVC runtime statically</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><span data-lang="zh">方式一：源码内嵌（推荐）</span><span data-lang="en">Option 1: add_subdirectory (recommended)</span></h3>
+<pre data-file="CMakeLists.txt">add_subdirectory(path/to/XGStudio-cpp-UI)
+target_link_libraries(YourApp PRIVATE VCUI::vcui)</pre>
+
+    <h3><span data-lang="zh">方式二：安装后 find_package</span><span data-lang="en">Option 2: install and find_package</span></h3>
+<pre data-file="PowerShell">cmake --install .build --config Release --prefix path/to/install
+
+# then, in your project
+find_package(VCUI 1.0 REQUIRED)
+target_link_libraries(YourApp PRIVATE VCUI::vcui)</pre>
+    <p data-lang="zh">配置时需带上前缀：<code>-DCMAKE_PREFIX_PATH=path/to/install</code>。系统库由 <code>VCUI::vcui</code> 自动传递：<code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code>。</p>
+    <p data-lang="en">Pass the prefix at configure time: <code>-DCMAKE_PREFIX_PATH=path/to/install</code>. System libraries are propagated automatically by <code>VCUI::vcui</code>: <code>d2d1 dwrite dwmapi uxtheme user32 gdi32 ole32 imm32</code>.</p>
+    <p data-lang="zh">此外仓库根目录带 <code>vcpkg.json</code> manifest，可通过 overlay port 安装；也可手动把 <code>include/</code> 加入头文件路径并链接 <code>vcui.lib</code>。</p>
+    <p data-lang="en">The repository also ships a <code>vcpkg.json</code> manifest for overlay-port installation; alternatively add <code>include/</code> to the include path and link <code>vcui.lib</code> plus the system libraries above.</p>
+
+    <h2 id="requirements"><span data-lang="zh">系统要求</span><span data-lang="en">System requirements</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">项</span><span data-lang="en">Item</span></th>
+          <th><span data-lang="zh">要求</span><span data-lang="en">Requirement</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">操作系统</span><span data-lang="en">OS</span></td><td><span data-lang="zh">Windows 10 1703（build 15063）及以上，含 Windows 11</span><span data-lang="en">Windows 10 1703 (build 15063) or later, including Windows 11</span></td></tr>
+          <tr><td><span data-lang="zh">编译器</span><span data-lang="en">Compiler</span></td><td><span data-lang="zh">MSVC 2019 / 2022（C++17），已在 MSVC 14.44 验证</span><span data-lang="en">MSVC 2019/2022 (C++17); verified on MSVC 14.44</span></td></tr>
+          <tr><td><span data-lang="zh">架构</span><span data-lang="en">Architecture</span></td><td><span data-lang="zh">已验证 x64；x86 / ARM64 未测试</span><span data-lang="en">x64 verified; x86 / ARM64 untested</span></td></tr>
+          <tr><td><span data-lang="zh">图形</span><span data-lang="en">Graphics</span></td><td><span data-lang="zh">任意支持 Direct2D 1.0 的显卡 / 驱动，含 WARP 软渲染回退</span><span data-lang="en">Any GPU/driver supporting Direct2D 1.0, including the WARP software fallback</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">下限由 Per-Monitor V2 DPI 决定（<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>），与 Direct2D 版本无关。库不支持 Windows 7 / 8 / 8.1。</p>
+    <p data-lang="en">The floor is set by Per-Monitor V2 DPI (<code>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</code>), not by the Direct2D version. Windows 7 / 8 / 8.1 are not supported.</p>
+
+    <h2 id="performance"><span data-lang="zh">性能</span><span data-lang="en">Performance</span></h2>
+    <p data-lang="zh">测试机：Intel Core i7-3520M、12GB DDR3 1600MHz、Intel HD Graphics 4000（未使用独显），程序为 <code>VCUIFrameDemo.exe</code>。</p>
+    <p data-lang="en">Test machine: Intel Core i7-3520M, 12 GB DDR3-1600, Intel HD Graphics 4000 (discrete GPU unused), running <code>VCUIFrameDemo.exe</code>.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-lang="zh">指标</span><span data-lang="en">Metric</span></th>
+          <th><span data-lang="zh">实测</span><span data-lang="en">Measured</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-lang="zh">内存占用（启动后）</span><span data-lang="en">Memory footprint (after launch)</span></td><td>12.7 MB</td></tr>
+          <tr><td><span data-lang="zh">静态 CPU（失焦 20s）</span><span data-lang="en">Idle CPU (20 s unfocused)</span></td><td>0 %</td></tr>
+          <tr><td><span data-lang="zh">静态 GPU</span><span data-lang="en">Idle GPU</span></td><td>0 %</td></tr>
+          <tr><td><span data-lang="zh">动态 CPU（持续切页）</span><span data-lang="en">Active CPU (page switching)</span></td><td><span data-lang="zh">≤ 5 %（实测峰值 4.4 %）</span><span data-lang="en">≤ 5% (peak 4.4%)</span></td></tr>
+          <tr><td><span data-lang="zh">动态 GPU</span><span data-lang="en">Active GPU</span></td><td><span data-lang="zh">≤ 10 %（实测峰值 7 %）</span><span data-lang="en">≤ 10% (peak 7%)</span></td></tr>
+          <tr><td><span data-lang="zh">滚动 / 动画单帧绘制</span><span data-lang="en">Frame paint, scrolling/animation</span></td><td>&lt; 12 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p data-lang="zh">实现上采用持久离屏层、脏矩形重绘、<code>IDWriteTextLayout</code> 文本缓存与 64 张上限的阴影位图缓存；滚动只刷新滚动容器区域。</p>
+    <p data-lang="en">The implementation relies on a persistent off-screen layer, dirty-rect painting, cached <code>IDWriteTextLayout</code> instances and a shadow bitmap cache capped at 64 entries; scrolling repaints only the scroll container.</p>
+
+    <h2 id="limitations"><span data-lang="zh">已知限制</span><span data-lang="en">Known limitations</span></h2>
+    <ul>
+      <li data-lang="zh">滚动没有惯性余速（滚动条已自绘，支持悬停显形与拖拽）。</li>
+      <li data-lang="en">Scrolling has no inertial fling (the scrollbar itself is custom-drawn and draggable).</li>
+      <li data-lang="zh">下拉菜单只向下展开，不会自动翻转。</li>
+      <li data-lang="en">Dropdown menus always open downwards and do not flip.</li>
+      <li data-lang="zh">跨屏 DPI 变化（<code>WM_DPICHANGED</code>）尚未实测重算，仅在启动时按系统 DPI 定标。</li>
+      <li data-lang="en">Cross-monitor DPI changes (<code>WM_DPICHANGED</code>) are not yet recalculated at runtime; scaling is fixed at startup.</li>
+      <li data-lang="zh">阴影为 4 层圆角位图叠加，并非真高斯模糊。</li>
+      <li data-lang="en">Shadows are four stacked rounded bitmaps, not a true Gaussian blur.</li>
+      <li data-lang="zh"><code>Segmented</code> 的悬停段尚未按鼠标位置计算。</li>
+      <li data-lang="en"><code>Segmented</code> does not yet compute the hovered segment from the pointer position.</li>
+      <li data-lang="zh">切页时只有新页入场动画，旧页为硬切。</li>
+      <li data-lang="en">Page transitions animate only the incoming page; the outgoing page is cut instantly.</li>
+    </ul>
+
+    <h2 id="license"><span data-lang="zh">许可证</span><span data-lang="en">License</span></h2>
+    <p data-lang="zh">Copyright 2026 XGstudio，Apache License 2.0。每个源文件头部带完整许可声明块，末行为 <code>SPDX-License-Identifier: Apache-2.0</code>；引入第三方代码时需在其文件内单独标注原始许可。</p>
+    <p data-lang="en">Copyright 2026 XGstudio, Apache License 2.0. Every source file carries the full license header ending with <code>SPDX-License-Identifier: Apache-2.0</code>; third-party code must keep its own license notice inside the file.</p>
+
+    <h2 id="links"><span data-lang="zh">延伸阅读</span><span data-lang="en">Further reading</span></h2>
+    <ul>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-UI" target="_blank" rel="noopener"><span data-lang="zh">源码仓库与完整 README</span><span data-lang="en">Source repository and full README</span></a></li>
+      <li><a href="https://github.com/XG-cyhilu/XGStudio-cpp-UI/blob/main/LICENSE" target="_blank" rel="noopener"><span data-lang="zh">LICENSE 全文</span><span data-lang="en">Full LICENSE text</span></a></li>
+      <li><a href="xgstudio-cpp-core.html"><span data-lang="zh">XGStudio-cpp-Core：配套的 C++ 基础组件库</span><span data-lang="en">XGStudio-cpp-Core: the companion C++ component libraries</span></a></li>
+    </ul>
+
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
+  </main>
+</div>
+
+<footer id="site-footer" class="site-footer"></footer>
+<script src="../assets/js/site.js"></script>
+</body>
+</html>

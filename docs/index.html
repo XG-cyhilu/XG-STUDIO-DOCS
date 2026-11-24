@@ -1,673 +1,130 @@
 <!DOCTYPE html>
-<!--
-  XG STUDIO · Documentation Hub
-  GitHub Pages entry (branch: main, path: /docs)
-
-  目录约定：
-    docs/index.html                  本门户首页
-    docs/projects/<slug>/index.html  各项目文档（slug: xgstudio-cpp-ui / xgstudio-cpp-core / void-craft-launcher）
-    docs/general/<slug>/index.html   通用文档
-
-  站点为纯静态：新增文档只需按上述路径放入 HTML 文件，并在本页 .doc-card 中登记入口。
--->
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-lang="zh" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>XG STUDIO · 文档中心</title>
-<meta name="description" content="XG STUDIO 官方文档中心：XGStudio-cpp-UI、XGStudio-cpp-Core、Void Craft Launcher 及通用开发文档。">
-<meta name="color-scheme" content="dark light">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2338bdf8'/%3E%3Cstop offset='1' stop-color='%232dd4bf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b1018'/%3E%3Cpath d='M18 20l14 24M46 20L18 44' stroke='url(%23g)' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
-<style>
-:root{
-  --bg:#070a0f;
-  --bg-soft:#0b1119;
-  --glass:rgba(255,255,255,.045);
-  --glass-hover:rgba(255,255,255,.075);
-  --line:rgba(255,255,255,.09);
-  --line-strong:rgba(255,255,255,.16);
-  --text:#e9eff7;
-  --muted:#96a3b5;
-  --dim:#6b7787;
-  --accent:#3ec8ff;
-  --accent-2:#2dd4bf;
-  --accent-ink:#04202b;
-  --warn:#f5c451;
-  --ring:rgba(62,200,255,.45);
-  --shadow:0 24px 60px -24px rgba(0,0,0,.75);
-  --radius:16px;
-  --mono:"Cascadia Code","JetBrains Mono",Consolas,"Courier New",monospace;
-  --sans:"Segoe UI Variable Display","Segoe UI","PingFang SC","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
-}
-html[data-theme="light"]{
-  --bg:#f4f7fc;
-  --bg-soft:#ffffff;
-  --glass:rgba(255,255,255,.66);
-  --glass-hover:rgba(255,255,255,.9);
-  --line:rgba(15,23,42,.09);
-  --line-strong:rgba(15,23,42,.18);
-  --text:#101a29;
-  --muted:#4d5b6e;
-  --dim:#76839a;
-  --accent:#0284c7;
-  --accent-2:#0d9488;
-  --accent-ink:#ffffff;
-  --warn:#a16207;
-  --ring:rgba(2,132,199,.35);
-  --shadow:0 20px 50px -28px rgba(15,23,42,.35);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  min-height:100vh;
-  font-family:var(--sans);
-  color:var(--text);
-  background:var(--bg);
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-}
-body::before,
-body::after{content:"";position:fixed;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(90px)}
-body::before{width:min(760px,90vw);height:min(760px,90vw);top:-320px;left:-180px;background:radial-gradient(circle,rgba(62,200,255,.20),transparent 68%)}
-body::after{width:min(700px,85vw);height:min(700px,85vw);top:8%;right:-260px;background:radial-gradient(circle,rgba(45,212,191,.14),transparent 68%)}
-html[data-theme="light"] body::before{background:radial-gradient(circle,rgba(2,132,199,.18),transparent 68%)}
-html[data-theme="light"] body::after{background:radial-gradient(circle,rgba(13,148,136,.12),transparent 68%)}
-
-.wrap{width:min(1180px,100%);margin:0 auto;padding:0 24px}
-
-/* ---------- top bar ---------- */
-.topbar{
-  position:sticky;top:0;z-index:30;
-  backdrop-filter:blur(22px) saturate(180%);
-  -webkit-backdrop-filter:blur(22px) saturate(180%);
-  background:linear-gradient(to bottom,rgba(7,10,15,.82),rgba(7,10,15,.5));
-  border-bottom:1px solid var(--line);
-}
-html[data-theme="light"] .topbar{background:linear-gradient(to bottom,rgba(255,255,255,.86),rgba(255,255,255,.5))}
-.topbar-inner{display:flex;align-items:center;gap:18px;height:62px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;flex:0 0 auto}
-.brand svg{width:30px;height:30px;flex:0 0 auto}
-.brand-text{display:flex;flex-direction:column;line-height:1.1}
-.brand-text b{font-size:14px;letter-spacing:.10em;font-weight:650}
-.brand-text span{font-size:10.5px;color:var(--dim);letter-spacing:.14em}
-
-.nav{display:flex;gap:2px;margin-left:8px;flex:0 0 auto}
-.nav a{
-  color:var(--muted);text-decoration:none;font-size:13.5px;padding:8px 12px;border-radius:9px;
-  transition:background .18s,color .18s;
-}
-.nav a:hover{color:var(--text);background:var(--glass)}
-@media (max-width:860px){.nav{display:none}}
-
-.search{
-  margin-left:auto;position:relative;flex:1 1 260px;max-width:340px;min-width:150px;
-}
-.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;opacity:.55}
-.search input{
-  width:100%;height:36px;padding:0 56px 0 33px;border-radius:10px;
-  background:var(--glass);border:1px solid var(--line);color:var(--text);
-  font-family:inherit;font-size:13px;outline:none;transition:border-color .18s,box-shadow .18s,background .18s;
-}
-.search input::placeholder{color:var(--dim)}
-.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring);background:var(--glass-hover)}
-.search kbd{
-  position:absolute;right:9px;top:50%;transform:translateY(-50%);
-  font-family:var(--mono);font-size:10px;color:var(--dim);
-  border:1px solid var(--line);border-radius:5px;padding:2px 6px;background:rgba(255,255,255,.03);
-}
-
-.icon-btn{
-  flex:0 0 auto;width:36px;height:36px;display:grid;place-items:center;border-radius:10px;cursor:pointer;
-  background:var(--glass);border:1px solid var(--line);color:var(--muted);
-  transition:background .18s,color .18s,border-color .18s,transform .18s;
-}
-.icon-btn:hover{background:var(--glass-hover);color:var(--text);border-color:var(--line-strong)}
-.icon-btn:active{transform:scale(.96)}
-.gh-link{
-  flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;
-  text-decoration:none;font-size:13px;font-weight:560;color:var(--accent-ink);
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  box-shadow:0 6px 20px -8px var(--accent);
-  transition:filter .18s,transform .18s;
-}
-.gh-link:hover{filter:brightness(1.08)}
-.gh-link:active{transform:translateY(1px)}
-@media (max-width:620px){.gh-link span{display:none}.gh-link{padding:0 11px}}
-
-/* ---------- hero ---------- */
-.hero{padding:72px 0 40px}
-.eyebrow{
-  display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;
-  color:var(--muted);text-transform:uppercase;
-  border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:6px 12px;
-}
-.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 10px var(--accent-2)}
-h1{
-  margin:22px 0 0;font-size:clamp(34px,5.4vw,58px);line-height:1.06;letter-spacing:-.02em;font-weight:680;
-}
-h1 .grad{
-  background:linear-gradient(105deg,var(--accent),var(--accent-2) 60%,var(--accent));
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.lede{margin:18px 0 0;max-width:660px;font-size:15.5px;line-height:1.75;color:var(--muted)}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-.btn{
-  display:inline-flex;align-items:center;gap:9px;height:42px;padding:0 20px;border-radius:11px;
-  font-size:14px;font-weight:600;text-decoration:none;border:1px solid transparent;cursor:pointer;
-  transition:transform .18s,filter .18s,background .18s,border-color .18s;
-}
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{color:var(--accent-ink);background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 12px 30px -14px var(--accent)}
-.btn-ghost{color:var(--text);background:var(--glass);border-color:var(--line)}
-.btn-ghost:hover{background:var(--glass-hover);border-color:var(--line-strong)}
-
-.stats{display:flex;flex-wrap:wrap;gap:34px;margin-top:44px;padding-top:26px;border-top:1px solid var(--line)}
-.stat b{display:block;font-size:22px;font-weight:650;letter-spacing:-.01em}
-.stat span{display:block;margin-top:4px;font-size:12px;color:var(--dim);letter-spacing:.06em}
-
-/* ---------- sections ---------- */
-section{padding:46px 0 8px}
-.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.section-head h2{margin:0;font-size:22px;font-weight:650;letter-spacing:-.01em}
-.section-head p{margin:6px 0 0;font-size:13px;color:var(--dim)}
-
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:15px}
-
-.glass{
-  background:var(--glass);
-  border:1px solid var(--line);
-  backdrop-filter:blur(16px) saturate(150%);
-  -webkit-backdrop-filter:blur(16px) saturate(150%);
-  border-radius:var(--radius);
-}
-
-.doc-card{
-  position:relative;display:flex;flex-direction:column;gap:12px;
-  padding:20px;text-decoration:none;color:inherit;overflow:hidden;
-  transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;
-}
-.doc-card::before{
-  content:"";position:absolute;inset:0 0 auto;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
-  opacity:.6;
-}
-.doc-card:hover{transform:translateY(-3px);border-color:var(--line-strong);background:var(--glass-hover);box-shadow:var(--shadow)}
-.doc-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.ico{
-  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
-  background:linear-gradient(135deg,rgba(62,200,255,.16),rgba(45,212,191,.10));
-  border:1px solid rgba(62,200,255,.18);color:var(--accent);
-}
-html[data-theme="light"] .ico{background:linear-gradient(135deg,rgba(2,132,199,.12),rgba(13,148,136,.08));border-color:rgba(2,132,199,.2)}
-.ico svg{width:19px;height:19px}
-.badge{
-  font-size:10.5px;letter-spacing:.08em;padding:3px 8px;border-radius:999px;
-  border:1px solid rgba(245,196,81,.32);color:var(--warn);background:rgba(245,196,81,.08);
-  white-space:nowrap;
-}
-.doc-card h3{margin:2px 0 0;font-size:16px;font-weight:640;letter-spacing:-.01em}
-.doc-card p{margin:0;font-size:13px;line-height:1.65;color:var(--muted);flex:1}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-.tags span{
-  font-size:11px;color:var(--dim);padding:2.5px 8px;border-radius:6px;
-  border:1px solid var(--line);background:rgba(255,255,255,.02);
-}
-html[data-theme="light"] .tags span{background:rgba(15,23,42,.03)}
-.go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--accent);font-weight:560;margin-top:2px}
-.go svg{width:13px;height:13px;transition:transform .2s}
-.doc-card:hover .go svg{transform:translateX(3px)}
-
-.mini-card{
-  display:flex;align-items:center;gap:14px;padding:16px 18px;text-decoration:none;color:inherit;
-  transition:transform .2s,border-color .2s,background .2s;
-}
-.mini-card:hover{transform:translateY(-2px);border-color:var(--line-strong);background:var(--glass-hover)}
-.mini-card .ico{width:34px;height:34px;flex:0 0 auto}
-.mini-card h3{margin:0;font-size:14.5px;font-weight:600}
-.mini-card p{margin:3px 0 0;font-size:12.5px;color:var(--dim);line-height:1.5}
-.mini-card .arrow{margin-left:auto;color:var(--dim);flex:0 0 auto}
-.mini-card .arrow svg{width:15px;height:15px}
-
-.empty{
-  display:none;padding:44px 12px;text-align:center;color:var(--dim);font-size:14px;
-}
-.empty b{color:var(--muted)}
-
-/* ---------- quick start ---------- */
-.quick{display:grid;grid-template-columns:1.25fr .95fr;gap:15px}
-@media (max-width:900px){.quick{grid-template-columns:1fr}}
-.panel{padding:22px}
-.panel h3{margin:0 0 4px;font-size:15.5px;font-weight:640}
-.panel .hint{margin:0 0 16px;font-size:12.5px;color:var(--dim);line-height:1.6}
-.code{
-  position:relative;border-radius:12px;border:1px solid var(--line);
-  background:rgba(0,0,0,.35);padding:16px 16px 16px;overflow:auto;
-}
-html[data-theme="light"] .code{background:rgba(15,23,42,.04)}
-.code pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--text);white-space:pre}
-.code .c{color:var(--dim)}
-.code .k{color:var(--accent-2)}
-.copy{
-  position:absolute;top:10px;right:10px;height:26px;padding:0 10px;border-radius:7px;cursor:pointer;
-  font-size:11px;font-family:inherit;color:var(--muted);
-  background:var(--glass);border:1px solid var(--line);
-  transition:color .18s,border-color .18s,background .18s;
-}
-.copy:hover{color:var(--text);border-color:var(--line-strong)}
-.copy.ok{color:var(--accent-2);border-color:rgba(45,212,191,.4)}
-.tree{font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--muted)}
-.tree .d{color:var(--accent)}
-.tree .m{color:var(--dim)}
-
-/* ---------- license ---------- */
-.licenses{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-@media (max-width:760px){.licenses{grid-template-columns:1fr}}
-.license{padding:22px;display:flex;flex-direction:column;gap:10px}
-.license .top{display:flex;align-items:center;gap:10px}
-.license h3{margin:0;font-size:15px;font-weight:640}
-.license p{margin:0;font-size:13px;line-height:1.7;color:var(--muted);flex:1}
-.license a{font-size:12.5px;color:var(--accent);text-decoration:none}
-.license a:hover{text-decoration:underline}
-.tag-license{font-size:10.5px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
-
-/* ---------- footer ---------- */
-footer{margin-top:60px;border-top:1px solid var(--line);padding:30px 0 44px}
-.foot{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
-.foot p{margin:0;font-size:12.5px;color:var(--dim);line-height:1.7}
-.foot nav{display:flex;flex-wrap:wrap;gap:6px}
-.foot nav a{
-  font-size:12.5px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;
-  transition:background .18s,color .18s;
-}
-.foot nav a:hover{background:var(--glass);color:var(--text)}
-
-/* ---------- toast ---------- */
-.toast{
-  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
-  z-index:50;opacity:0;pointer-events:none;
-  padding:11px 18px;border-radius:11px;font-size:13px;
-  background:var(--bg-soft);border:1px solid var(--line-strong);color:var(--text);
-  box-shadow:var(--shadow);
-  transition:opacity .22s,transform .22s;max-width:calc(100vw - 40px);
-}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *{animation:none!important;transition:none!important}
-}
-.rise{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
-@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-</style>
+<title data-zh="XG STUDIO 文档中心" data-en="XG STUDIO Documentation">XG STUDIO 文档中心</title>
+<meta name="description" content="XG STUDIO 官方文档：XGStudio-cpp-UI、XGStudio-cpp-Core、Void Craft Launcher 及通用开发文档。Official documentation for the XG STUDIO desktop product line.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b5cab'/%3E%3Ctext x='32' y='42' font-family='Segoe UI,Arial' font-size='26' font-weight='700' fill='white' text-anchor='middle'%3EXG%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/site.css">
 </head>
-<body>
+<body data-root=".">
+<a class="skip" href="#main"><span data-lang="zh">跳到正文</span><span data-lang="en">Skip to content</span></a>
+<header id="site-header" class="site-header"></header>
 
-<header class="topbar">
-  <div class="wrap topbar-inner">
-    <a class="brand" href="./" aria-label="XG STUDIO 文档中心">
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <defs><linearGradient id="logoG" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3ec8ff"/><stop offset="1" stop-color="#2dd4bf"/>
-        </linearGradient></defs>
-        <rect width="64" height="64" rx="14" fill="none" stroke="rgba(255,255,255,.14)"/>
-        <path d="M18 19l14 26M46 19L18 45" stroke="url(#logoG)" stroke-width="6" stroke-linecap="round"/>
-      </svg>
-      <span class="brand-text"><b>XG STUDIO</b><span>DOCUMENTATION</span></span>
-    </a>
+<div class="layout">
+  <aside id="site-sidebar" class="sidebar" aria-label="Documentation navigation"></aside>
 
-    <nav class="nav" aria-label="主导航">
-      <a href="#projects">项目文档</a>
-      <a href="#general">通用文档</a>
-      <a href="#quickstart">快速开始</a>
-      <a href="#license">许可证</a>
-    </nav>
+  <main id="main" class="doc">
 
-    <div class="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
-      </svg>
-      <input id="q" type="search" placeholder="搜索文档、项目或关键词" autocomplete="off" aria-label="搜索文档">
-      <kbd>/</kbd>
-    </div>
-
-    <button class="icon-btn" id="themeBtn" type="button" aria-label="切换主题">
-      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
-      </svg>
-    </button>
-
-    <a class="gh-link" href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-        <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/>
-      </svg>
-      <span>GitHub</span>
-    </a>
-  </div>
-</header>
-
-<main class="wrap">
-
-  <!-- HERO -->
-  <section class="hero rise" style="animation-delay:.02s">
-    <span class="eyebrow"><span class="dot"></span>Official Documentation</span>
-    <h1>XG STUDIO<br><span class="grad">文档中心</span></h1>
-    <p class="lede">
-      XG STUDIO 全部官方文档的统一入口。围绕桌面端控件库、核心运行库与 Minecraft 启动器，
-      提供架构说明、接口约定、设计规范与开发指引。
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#projects">
-        浏览项目文档
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-      <a class="btn btn-ghost" href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS" target="_blank" rel="noopener">查看仓库</a>
-      <a class="btn btn-ghost" href="#quickstart">本地预览</a>
-    </div>
-    <div class="stats">
-      <div class="stat"><b>3</b><span>文档项目</span></div>
-      <div class="stat"><b>9</b><span>文档条目</span></div>
-      <div class="stat"><b>2</b><span>许可协议</span></div>
-      <div class="stat"><b>Pages</b><span>静态托管</span></div>
-    </div>
-  </section>
-
-  <!-- PROJECTS -->
-  <section id="projects">
-    <div class="section-head">
-      <div>
-        <h2>项目文档</h2>
-        <p>核心产品线的技术文档入口</p>
+    <div class="hero">
+      <h1><span data-lang="zh">XG STUDIO 文档中心</span><span data-lang="en">XG STUDIO Documentation</span></h1>
+      <p class="lede" data-lang="zh">
+        本仓库收录 XG STUDIO 桌面产品线的官方技术文档：基于 Direct2D 的自绘控件库、C++ 公共组件库，
+        以及 Minecraft 启动器。文档中英双语提供，并随各项目版本持续更新。
+      </p>
+      <p class="lede" data-lang="en">
+        Official technical documentation for the XG STUDIO desktop product line: a self-drawn
+        Direct2D control library, a set of reusable C++ component libraries, and a Minecraft launcher.
+        All pages are available in Chinese and English and are maintained alongside each project.
+      </p>
+      <div class="hero-facts">
+        <span><b>3</b><span data-lang="zh">项目文档</span><span data-lang="en">project guides</span></span>
+        <span><b>17</b><span data-lang="zh">自绘控件</span><span data-lang="en">controls</span></span>
+        <span><b>13</b><span data-lang="zh">核心模块</span><span data-lang="en">core modules</span></span>
+        <span><b>2026-11</b><span data-lang="zh">最近更新</span><span data-lang="en">last updated</span></span>
       </div>
     </div>
-    <div class="grid">
 
-      <a class="doc-card glass" href="./projects/xgstudio-cpp-ui/" data-planned
-         data-tags="c++ direct2d ui 控件库 fluent2 liquidglass 设计 渲染">
-        <div class="card-top">
-          <span class="ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-              <path d="M12 3l9 5-9 5-9-5 9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".55"/>
-            </svg>
-          </span>
-          <span class="badge">筹备中</span>
-        </div>
+    <h2 id="projects"><span data-lang="zh">项目文档</span><span data-lang="en">Projects</span></h2>
+    <p class="sub" data-lang="zh">核心产品线的技术文档，内容依据各仓库 README 与源码整理。</p>
+    <p class="sub" data-lang="en">Technical documentation for the core products, compiled from each repository's README and source code.</p>
+
+    <div class="cards">
+      <a class="card" href="projects/xgstudio-cpp-ui.html">
+        <span class="card-kicker">C++17 · Direct2D · v1.0.0</span>
         <h3>XGStudio-cpp-UI</h3>
-        <p>C++ / Direct2D 桌面控件库。提供 Fluent 2 与 Liquid Glass 双主题，覆盖真高斯模糊、物理折射与法线贴图等渲染实现。</p>
-        <div class="tags"><span>C++</span><span>Direct2D</span><span>Fluent 2</span><span>Liquid Glass</span></div>
-        <span class="go">查看文档 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <p data-lang="zh">全自绘 Windows 控件库，17 个控件、Fluent 2 主题体系与完整输入法支持。</p>
+        <p data-lang="en">A fully self-drawn Windows control library: 17 controls, a Fluent 2 theme system and complete IME support.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
       </a>
 
-      <a class="doc-card glass" href="./projects/xgstudio-cpp-core/" data-planned
-         data-tags="c++ core 核心 运行时 窗口 渲染 插件 配置">
-        <div class="card-top">
-          <span class="ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-              <rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>
-            </svg>
-          </span>
-          <span class="badge">筹备中</span>
-        </div>
+      <a class="card" href="projects/xgstudio-cpp-core.html">
+        <span class="card-kicker">C++17 · CMake · v1.0.0</span>
         <h3>XGStudio-cpp-Core</h3>
-        <p>桌面端核心运行库：窗口与消息循环、渲染管线、配置读写与插件基础设施，为上层控件和启动器提供统一支撑。</p>
-        <div class="tags"><span>C++</span><span>渲染管线</span><span>基础设施</span></div>
-        <span class="go">查看文档 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <p data-lang="zh">由 13 个可独立取用模块组成的公共组件库：下载、日志、网络、加密、压缩等。</p>
+        <p data-lang="en">Thirteen independently usable component modules: download, logging, networking, cryptography, archives and more.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
       </a>
 
-      <a class="doc-card glass" href="./projects/void-craft-launcher/" data-planned
-         data-tags="voidcraft launcher 启动器 minecraft fabric neoforge 版本 账户 modrinth bmclapi">
-        <div class="card-top">
-          <span class="ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-              <path d="M12 2c4 3 6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 2-7 6-10Z"/><path d="M9 13c0 2 1.3 3.5 3 3.5"/>
-            </svg>
-          </span>
-          <span class="badge">筹备中</span>
-        </div>
+      <a class="card" href="projects/void-craft-launcher.html">
+        <span class="card-kicker">C++17 · AGPL-3.0</span>
         <h3>Void Craft Launcher</h3>
-        <p>Minecraft 多版本启动器：版本隔离、加载器适配（Fabric / NeoForge / Forge）、账户体系与资源下载链路说明。</p>
-        <div class="tags"><span>Minecraft</span><span>启动器</span><span>版本管理</span></div>
-        <span class="go">查看文档 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <p data-lang="zh">面向标准 .minecraft 目录的 Minecraft Java 版启动器，v0.2 重构中。</p>
+        <p data-lang="en">A Minecraft: Java Edition launcher built around the standard .minecraft layout, refactoring at v0.2.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
       </a>
-
     </div>
-  </section>
 
-  <!-- GENERAL -->
-  <section id="general">
-    <div class="section-head">
-      <div>
-        <h2>通用文档</h2>
-        <p>跨项目共用的规范、流程与说明</p>
-      </div>
+    <h2 id="general"><span data-lang="zh">通用文档</span><span data-lang="en">General</span></h2>
+    <p class="sub" data-lang="zh">跨项目共用的流程、环境与规范。</p>
+    <p class="sub" data-lang="en">Shared processes, environments and conventions across projects.</p>
+
+    <div class="cards">
+      <a class="card" href="general/quick-start.html">
+        <span class="card-kicker"><span data-lang="zh">入门</span><span data-lang="en">Getting started</span></span>
+        <h3><span data-lang="zh">快速开始</span><span data-lang="en">Quick Start</span></h3>
+        <p data-lang="zh">仓库结构、本地预览、新增文档与 GitHub Pages 发布流程。</p>
+        <p data-lang="en">Repository layout, local preview, adding pages and publishing through GitHub Pages.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
+      </a>
+
+      <a class="card" href="general/toolchain.html">
+        <span class="card-kicker"><span data-lang="zh">开发环境</span><span data-lang="en">Development</span></span>
+        <h3><span data-lang="zh">环境与工具链</span><span data-lang="en">Environment &amp; Toolchain</span></h3>
+        <p data-lang="zh">Windows、MSVC、CMake、vcpkg 与运行时库的统一约定。</p>
+        <p data-lang="en">Unified conventions for Windows, MSVC, CMake, vcpkg and runtime libraries.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
+      </a>
+
+      <a class="card" href="general/design.html">
+        <span class="card-kicker"><span data-lang="zh">设计</span><span data-lang="en">Design</span></span>
+        <h3><span data-lang="zh">设计与视觉规范</span><span data-lang="en">Design &amp; Visual System</span></h3>
+        <p data-lang="zh">Fluent 2 基线、Token 色彩、type ramp 排版与交互反馈约定。</p>
+        <p data-lang="en">Fluent 2 baseline, color tokens, type ramp and interaction conventions.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
+      </a>
+
+      <a class="card" href="general/licensing.html">
+        <span class="card-kicker"><span data-lang="zh">合规</span><span data-lang="en">Compliance</span></span>
+        <h3><span data-lang="zh">许可证与合规</span><span data-lang="en">Licenses &amp; Compliance</span></h3>
+        <p data-lang="zh">代码 Apache-2.0、文档 CC BY-NC-SA 4.0、启动器 AGPL-3.0 的适用范围。</p>
+        <p data-lang="en">Scope of Apache-2.0 code, CC BY-NC-SA 4.0 documentation and AGPL-3.0 launcher licensing.</p>
+        <span class="card-foot"><span data-lang="zh">阅读文档</span><span data-lang="en">Read the guide</span><span class="arrow">→</span></span>
+      </a>
     </div>
-    <div class="grid">
 
-      <a class="mini-card glass" href="./general/quick-start/" data-planned data-tags="快速开始 入门 克隆 结构">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 5h6v6H4zM14 5h6v6h-6zM4 15h6v6H4z"/><path d="M17 15v6M14 18h6" opacity=".6"/></svg></span>
-        <span><h3>快速开始</h3><p>仓库结构、本地预览与文档编写约定</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
+    <h2><span data-lang="zh">本地预览</span><span data-lang="en">Preview locally</span></h2>
+    <p data-lang="zh">本站为纯静态页面，没有任何构建步骤。克隆仓库后在 <code>docs</code> 目录启动任意静态服务器即可。</p>
+    <p data-lang="en">The site is entirely static and requires no build step. Clone the repository and serve the <code>docs</code> folder with any static file server.</p>
 
-      <a class="mini-card glass" href="./general/toolchain/" data-planned data-tags="环境 工具链 windows msvc net8 node pnpm vs2022">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6l9-4 9 4v12l-9 4-9-4V6Z"/><path d="M3 6l9 4 9-4M12 10v12" opacity=".6"/></svg></span>
-        <span><h3>环境与工具链</h3><p>Windows / MSVC / .NET 8 / Node + pnpm 推荐组合</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
-
-      <a class="mini-card glass" href="./general/design/" data-planned data-tags="设计 视觉 fluent2 liquidglass 色彩 动效 规范">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18"/><circle cx="12" cy="12" r="2.5"/></svg></span>
-        <span><h3>设计与视觉规范</h3><p>Fluent 2 与 Liquid Glass 的落地原则</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
-
-      <a class="mini-card glass" href="./general/release/" data-planned data-tags="版本 发布 分支 pages 流程 语义化">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3v6a3 3 0 0 0 3 3h6"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="12" r="2"/><path d="M18 3v9"/></svg></span>
-        <span><h3>版本与发布</h3><p>分支模型、文档版本与 Pages 发布流程</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
-
-      <a class="mini-card glass" href="./general/licensing/" data-planned data-tags="许可 合规 apache cc by-nc-sa 版权">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3Z"/><path d="M9 12l2 2 4-4" opacity=".65"/></svg></span>
-        <span><h3>许可证与合规</h3><p>代码与内容双许可的适用范围</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
-
-      <a class="mini-card glass" href="./general/contributing/" data-planned data-tags="贡献 issue pr 写作 约定 规范">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 4v6M14 7h6" opacity=".6"/></svg></span>
-        <span><h3>贡献指南</h3><p>Issue、PR 与文档写作约定</p></span>
-        <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9"/></svg></span>
-      </a>
-
-    </div>
-    <div class="empty" id="empty">
-      没有匹配的文档。试试 <b>cpp</b>、<b>设计</b>、<b>启动器</b> 或 <b>license</b>。
-    </div>
-  </section>
-
-  <!-- QUICK START -->
-  <section id="quickstart">
-    <div class="section-head">
-      <div>
-        <h2>快速开始</h2>
-        <p>克隆仓库并在本地预览文档站点</p>
-      </div>
-    </div>
-    <div class="quick">
-      <div class="panel glass">
-        <h3>获取文档仓库</h3>
-        <p class="hint">站点为纯静态 HTML，无需构建步骤，任意静态服务器均可预览。</p>
-        <div class="code">
-          <button class="copy" id="copyBtn" type="button">复制</button>
-          <pre><span class="c"># 克隆仓库</span>
-git clone https://github.com/XG-cyhilu/XG-STUDIO-DOCS.git
-<span class="c"># 进入文档目录并启动本地服务器</span>
+<pre data-file="PowerShell">git clone https://github.com/XG-cyhilu/XG-STUDIO-DOCS.git
 cd XG-STUDIO-DOCS/docs
 python -m http.server 8080
-<span class="c"># 浏览器访问 http://localhost:8080</span></pre>
-        </div>
-      </div>
-      <div class="panel glass">
-        <h3>目录结构</h3>
-        <p class="hint">新增文档按项目 / 通用分类落到对应目录，并在首页登记入口。</p>
-        <div class="tree"><span class="d">docs/</span>
-├── <span class="d">index.html</span>          <span class="m"># 本站首页</span>
-├── <span class="d">projects/</span>
-│   ├── xgstudio-cpp-ui/
-│   ├── xgstudio-cpp-core/
-│   └── void-craft-launcher/
-└── <span class="d">general/</span>             <span class="m"># 通用文档</span></div>
-      </div>
+# open http://localhost:8080</pre>
+
+    <div class="note">
+      <p data-lang="zh"><strong>关于英文内容：</strong>XGStudio-cpp-UI 与 XGStudio-cpp-Core 的上游 README 仅提供中文，本站英文版本由本仓库翻译整理；Void Craft Launcher 仓库自带中英双语 README。如遇表述差异，以上游仓库为准。</p>
+      <p data-lang="en"><strong>About the English text:</strong> the upstream READMEs of XGStudio-cpp-UI and XGStudio-cpp-Core are Chinese-only; their English versions here are translations maintained by this repository. Void Craft Launcher ships a bilingual README. If wording differs, the upstream repository is authoritative.</p>
     </div>
-  </section>
 
-  <!-- LICENSE -->
-  <section id="license">
-    <div class="section-head">
-      <div>
-        <h2>许可证与合规</h2>
-        <p>代码与文档内容分别适用不同协议</p>
-      </div>
-    </div>
-    <div class="licenses">
+    <nav id="pager" class="pager" aria-label="Page navigation"></nav>
+    <div id="edit-row" class="edit-row"></div>
 
-      <div class="license glass">
-        <div class="top">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 4h9l3 3v13H8z"/><path d="M4 8v12h11" opacity=".55"/></svg></span>
-          <h3>代码许可</h3>
-          <span class="tag-license">Apache-2.0</span>
-        </div>
-        <p>仓库内的代码、脚本与配置以 Apache License 2.0 授权，允许商用与修改，需保留版权与许可声明。</p>
-        <a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/blob/main/LICENSE-CODE" target="_blank" rel="noopener">阅读 LICENSE-CODE →</a>
-      </div>
+  </main>
+</div>
 
-      <div class="license glass">
-        <div class="top">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5" opacity=".65"/></svg></span>
-          <h3>内容许可</h3>
-          <span class="tag-license">CC BY-NC-SA 4.0</span>
-        </div>
-        <p>全部文档内容以 CC BY-NC-SA 4.0 授权：署名、非商业性使用、相同方式共享。</p>
-        <a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/blob/main/LICENSE-CONTENT" target="_blank" rel="noopener">阅读 LICENSE-CONTENT →</a>
-      </div>
-
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <div class="wrap foot">
-    <p>© 2026 XG STUDIO · 代码 Apache-2.0 · 内容 CC BY-NC-SA 4.0<br>由 GitHub Pages 托管，文档仍在持续补充中。</p>
-    <nav aria-label="页脚导航">
-      <a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS" target="_blank" rel="noopener">仓库</a>
-      <a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/issues" target="_blank" rel="noopener">问题反馈</a>
-      <a href="https://github.com/XG-cyhilu/XG-STUDIO-DOCS/pulls" target="_blank" rel="noopener">贡献文档</a>
-      <a href="#projects">回到顶部</a>
-    </nav>
-  </div>
-</footer>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-<script>
-(function () {
-  var root = document.documentElement;
-  var themeBtn = document.getElementById('themeBtn');
-  var saved = null;
-  try { saved = localStorage.getItem('xgdocs-theme'); } catch (e) {}
-  if (!saved) {
-    saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  root.setAttribute('data-theme', saved);
-
-  themeBtn.addEventListener('click', function () {
-    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    try { localStorage.setItem('xgdocs-theme', next); } catch (e) {}
-  });
-
-  /* ---------- search ---------- */
-  var q = document.getElementById('q');
-  var cards = Array.prototype.slice.call(document.querySelectorAll('[data-tags], .doc-card, .mini-card'));
-  var sections = [document.getElementById('projects'), document.getElementById('general')];
-  var empty = document.getElementById('empty');
-
-  function normalize(s) {
-    return (s || '').toLowerCase().replace(/\s+/g, '');
-  }
-
-  function filter() {
-    var term = normalize(q.value);
-    var visible = 0;
-    cards.forEach(function (card) {
-      var hay = normalize(card.textContent + ' ' + (card.getAttribute('data-tags') || ''));
-      var hit = !term || hay.indexOf(term) !== -1;
-      card.style.display = hit ? '' : 'none';
-      if (hit) visible++;
-    });
-    sections.forEach(function (sec) {
-      if (!sec) return;
-      var alive = Array.prototype.some.call(sec.querySelectorAll('.doc-card, .mini-card'), function (c) {
-        return c.style.display !== 'none';
-      });
-      sec.style.display = alive ? '' : 'none';
-    });
-    empty.style.display = (term && !visible) ? 'block' : 'none';
-  }
-
-  q.addEventListener('input', filter);
-  q.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { q.value = ''; filter(); q.blur(); }
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === '/' && document.activeElement !== q) {
-      e.preventDefault();
-      q.focus();
-    }
-  });
-
-  /* ---------- planned docs toast ---------- */
-  var toast = document.getElementById('toast');
-  var timer = null;
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(timer);
-    timer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
-  }
-
-  document.querySelectorAll('[data-planned]').forEach(function (el) {
-    el.addEventListener('click', function (e) {
-      e.preventDefault();
-      var name = (el.querySelector('h3') || {}).textContent || '该文档';
-      showToast(name + ' 正在编写中，敬请期待。');
-    });
-  });
-
-  /* ---------- copy ---------- */
-  var copyBtn = document.getElementById('copyBtn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      var url = 'git clone https://github.com/XG-cyhilu/XG-STUDIO-DOCS.git';
-      var done = function () {
-        copyBtn.textContent = '已复制';
-        copyBtn.classList.add('ok');
-        setTimeout(function () { copyBtn.textContent = '复制'; copyBtn.classList.remove('ok'); }, 1800);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(done, done);
-      } else {
-        var ta = document.createElement('textarea');
-        ta.value = url; document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); } catch (e) {}
-        document.body.removeChild(ta);
-        done();
-      }
-    });
-  }
-})();
-</script>
+<footer id="site-footer" class="site-footer"></footer>
+<script src="assets/js/site.js"></script>
 </body>
 </html>
